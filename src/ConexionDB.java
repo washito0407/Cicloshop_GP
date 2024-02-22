@@ -3,14 +3,10 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class ConexionDB {
-    String host, user, password; //Datos para acceder a la base de datos
-    String mensaje;
-    /*Constructor*/
-    public ConexionDB(String host, String user, String password){
-        this.host = host;
-        this.user = user;
-        this.password = password;
-    }
+    private String host="jdbc:mysql://38.46.218.114:3306/intexcom_vicishop";
+    private String user="intexcom_kevinC";
+    private String password="Encebollado0401."; //Datos para acceder a la base de datos
+    public String mensaje;
 
     public String getMensaje() {
         return mensaje;
@@ -21,25 +17,18 @@ public class ConexionDB {
     }
 
     /*Constructor vacio*/
-    public ConexionDB(){
+    public ConexionDB(){}
 
-    }
-    public void ConexionLocal(String host, String user, String password){
-        try (Connection connection = DriverManager.getConnection(host, user, password)) {
-            if(connection != null){
-                mensaje = "Conexión correcta";
-                System.out.println(mensaje);
-            }else {
-                mensaje="";
-                System.out.println(mensaje);
-            }
+    public Connection ConexionLocal(){
+        Connection connection=null;
+        try {
+             connection = DriverManager.getConnection(this.host, this.user, this.password);
         }
         catch (SQLException e){
             System.out.println(e);
             mensaje = "Algo salió mal :(";
             System.out.println(mensaje);
-        }catch (Exception ex){
-            ex.getMessage();
         }
+        return connection;
     }
 }
