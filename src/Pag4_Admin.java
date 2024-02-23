@@ -9,9 +9,6 @@ public class Pag4_Admin {
     private JButton ingresarProductosButton;
     private JButton facturasButton;
     private JButton eliminarProductosButton;
-    private JLabel Ingresar;
-    private JLabel borra;
-    private JLabel factu;
     static JFrame frameAdminP = new JFrame("CICLOSHOP");
 
     public Pag4_Admin() {
@@ -28,7 +25,7 @@ public class Pag4_Admin {
                 frameAdminP.setVisible(false);
                 Pag4i1_Ingreso.frameIngresoP.setContentPane(new Pag4i1_Ingreso().Ingreso);
                 Pag4i1_Ingreso.frameIngresoP.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                Pag4i1_Ingreso.frameIngresoP.setSize(800, 800);
+                Pag4i1_Ingreso.frameIngresoP.setSize(950, 800);
                 Pag4i1_Ingreso.frameIngresoP.setVisible(true);
                 Pag4i1_Ingreso.frameIngresoP.setLocationRelativeTo(null);
             }

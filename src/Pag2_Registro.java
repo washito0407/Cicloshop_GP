@@ -28,7 +28,6 @@ public class Pag2_Registro {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-
                     Connection connection = conexionDB.ConexionLocal();
                     PreparedStatement ps = connection.prepareStatement("INSERT INTO Usuarios(user_id, nombre_usr,apellido_usr,password_usr) VALUES (4,?,?,?)");
                     ps.setString(1,nombreField.getText());

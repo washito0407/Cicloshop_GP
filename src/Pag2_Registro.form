@@ -82,7 +82,7 @@
           </grid>
         </constraints>
         <properties>
-          <toolTipText value="AQUI INGRESE SU NUMERO DE IDENTIFICACION POR EJEMPLO &quot;1727374757&quot;"/>
+          <toolTipText value="AQUI INGRESE SU CONTRASEÑA"/>
         </properties>
       </component>
       <component id="35d31" class="javax.swing.JButton" binding="REGISTRARSEButton" default-binding="true">
