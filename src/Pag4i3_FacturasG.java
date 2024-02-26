@@ -23,6 +23,25 @@ public class Pag4i3_FacturasG {
                 Pag4_Admin.frameAdminP.setVisible(true);
             }
         });
+        ELIMINARButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int filaSeleccionada = table1.getSelectedRow();
+                if (filaSeleccionada!=-1){
+                    int idFilaSeleccionada = Integer.parseInt(table1.getValueAt(filaSeleccionada,0).toString());
+                    Connection connection = conexionDB.ConexionLocal();
+                    try {
+                        PreparedStatement ps = connection.prepareStatement("DELETE FROM Facturas WHERE factura_id=?");
+                        ps.setInt(1,idFilaSeleccionada);
+                        ps.executeUpdate();
+                        actualizarTabla();
+                    }catch (SQLException ex){
+                        JOptionPane.showMessageDialog(null,ex.getMessage());
+                    }
+
+                }
+            }
+        });
     }
     public void actualizarTabla(){
         try {
