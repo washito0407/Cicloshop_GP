@@ -37,8 +37,8 @@ public class Pag3_Login {
                         {
                             usuarioEncontrado=true;
                             frameLogin.dispose();
-                            Pag5_Compra.frameCompra.setContentPane(new Pag5_Compra().pag5CompraPanel); //Else falta con la conexion a la tabla de administradores
-                            Pag5_Compra.frameCompra.setSize(900,700);
+                            Pag5_Compra.frameCompra.setContentPane(new Pag5_Compra().pag5CompraPanel);
+                            Pag5_Compra.frameCompra.setSize(1200,700);
                             Pag5_Compra.frameCompra.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                             Pag5_Compra.frameCompra.setVisible(true);
                             Pag5_Compra.frameCompra.setLocationRelativeTo(null);
