@@ -26,6 +26,7 @@ public class Pag5_Compra {
         //Inicializamos el spinner
         SpinnerModel spinnerModel = new SpinnerNumberModel(1,1,20,1);
         cantidadSpinner.setModel(spinnerModel);
+
         DefaultTableModel modeloCarrito = new DefaultTableModel();
         modeloCarrito.addColumn("Producto ID");
         modeloCarrito.addColumn("Nombre");
@@ -33,34 +34,8 @@ public class Pag5_Compra {
         modeloCarrito.addColumn("Cantidad");
         modeloCarrito.addColumn("Total");
         table2.setModel(modeloCarrito);
-        HashSet<String> productosCarrito= new HashSet<>();
 
-        try {
-            Connection connection = conexionDB.ConexionLocal();
-
-            DefaultTableModel modelo = new DefaultTableModel();
-            table1.setModel(modelo);
-            PreparedStatement preparedStatement = connection.prepareStatement("SELECT producto_id, nombre_prd, descripcion, precio_venta, stock FROM Productos");
-            ResultSet rs = preparedStatement.executeQuery();
-            ResultSetMetaData resultSetMetaData = rs.getMetaData();
-
-            int cantidadColumnas = resultSetMetaData.getColumnCount();
-
-            modelo.addColumn("Producto ID");
-            modelo.addColumn("Nombre");
-            modelo.addColumn("Descripcion");
-            modelo.addColumn("Precio");
-            modelo.addColumn("Stock");
-            while (rs.next()){
-                Object[] filas = new Object[cantidadColumnas];
-                for (int i=0;i<cantidadColumnas;i++){
-                    filas[i] = rs.getObject(i + 1);
-                }
-                modelo.addRow(filas);
-            }
-        } catch (SQLException ex) {
-            throw new RuntimeException(ex);
-        }
+        actualizarTablaSQL();
         table1.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
@@ -83,12 +58,43 @@ public class Pag5_Compra {
         FACTURARButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                frameCompra.setVisible(false);
-                Pag5i1_Factura.frameFacturaCompra.setContentPane(new Pag5i1_Factura().pag5FacturaPanel);
-                Pag5i1_Factura.frameFacturaCompra.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                Pag5i1_Factura.frameFacturaCompra.setSize(800, 800);
-                Pag5i1_Factura.frameFacturaCompra.setVisible(true);
-                Pag5i1_Factura.frameFacturaCompra.setLocationRelativeTo(null);
+                frameCompra.dispose();
+                Pag5i_Cliente.frameCliente.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                Pag5i_Cliente.frameCliente.setContentPane(new Pag5i_Cliente().clientePanel);
+                Pag5i_Cliente.frameCliente.setSize(500,700);
+                Pag5i_Cliente.frameCliente.setVisible(true);
+                Pag5i_Cliente.frameCliente.setLocationRelativeTo(null);
+
+                Connection connection = conexionDB.ConexionLocal();
+                int ultimaFactura=0;
+                try {
+                    int idTemp = 1727578721;
+                    PreparedStatement psTemp = connection.prepareStatement("INSERT INTO Facturas(cliente_id) VALUES (?)");
+                    psTemp.setInt(1,idTemp);
+                    psTemp.executeUpdate();
+                    PreparedStatement factura = connection.prepareStatement("SELECT MAX(factura_id) AS idFactura FROM Facturas");
+                    ResultSet rsFactura = factura.executeQuery();
+                    if (rsFactura.next()){
+                        ultimaFactura = rsFactura.getInt(1);
+                    }
+                    PreparedStatement ps = connection.prepareStatement("INSERT INTO Detalle(cantidad_producto, producto_id, factura_id) VALUES (?,?,?)");
+                    PreparedStatement actualizarStock = connection.prepareStatement("UPDATE Productos SET stock = stock - ? WHERE producto_id=?");
+                    for (int i = 0; i <table2.getRowCount(); i++) {
+                        ps.setInt(1,Integer.parseInt(table2.getValueAt(i,3).toString()));
+                        ps.setInt(2,Integer.parseInt(table2.getValueAt(i,0).toString()));
+                        ps.setInt(3,ultimaFactura);
+                        ps.executeUpdate();
+
+                        actualizarStock.setInt(1,Integer.parseInt(table2.getValueAt(i,3).toString()));
+                        actualizarStock.setInt(2,Integer.parseInt(table2.getValueAt(i,0).toString()));
+                        actualizarStock.executeUpdate();
+                    }
+                    actualizarTablaSQL();
+                }catch (SQLException ex){
+                    JOptionPane.showMessageDialog(null,ex.getMessage());
+                }
+
+
             }
         });
         SELECCIONARButton.addActionListener(new ActionListener() {
@@ -151,6 +157,34 @@ public class Pag5_Compra {
             modelo.addRow(filas);
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(null,ex.getMessage());
+        }
+    }
+    public void actualizarTablaSQL(){
+        try {
+            Connection connection = conexionDB.ConexionLocal();
+
+            DefaultTableModel modelo = new DefaultTableModel();
+            table1.setModel(modelo);
+            PreparedStatement preparedStatement = connection.prepareStatement("SELECT producto_id, nombre_prd, descripcion, precio_venta, stock FROM Productos");
+            ResultSet rs = preparedStatement.executeQuery();
+            ResultSetMetaData resultSetMetaData = rs.getMetaData();
+
+            int cantidadColumnas = resultSetMetaData.getColumnCount();
+
+            modelo.addColumn("Producto ID");
+            modelo.addColumn("Nombre");
+            modelo.addColumn("Descripcion");
+            modelo.addColumn("Precio");
+            modelo.addColumn("Stock");
+            while (rs.next()){
+                Object[] filas = new Object[cantidadColumnas];
+                for (int i=0;i<cantidadColumnas;i++){
+                    filas[i] = rs.getObject(i + 1);
+                }
+                modelo.addRow(filas);
+            }
+        } catch (SQLException ex) {
+            throw new RuntimeException(ex);
         }
     }
     public void obtenerImagen(int filaSeleccionada){

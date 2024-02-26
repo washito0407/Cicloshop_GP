@@ -140,7 +140,7 @@ public class Pag4i1_Ingreso {
                     actualizarTabla();
                     JOptionPane.showMessageDialog(null,"Se han eliminado los datos correctamente");
                 }catch (SQLException sqlException){
-                    JOptionPane.showMessageDialog(null,sqlException.getMessage(),"Error de sintaxis",JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(null,"No se puede eliminar el producto, elimine las facturas correspondientes","ERROR",JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
@@ -163,12 +163,16 @@ public class Pag4i1_Ingreso {
                 precioCompraField.setText(resultSet.getString("precio_compra"));
                 precioVentaField.setText(resultSet.getString("precio_venta"));
                 stockField.setText(String.valueOf(resultSet.getInt("stock")));
-                byte[] bytes = resultSet.getBytes("imagen_prd");
-                ImageIcon imageIcon = new ImageIcon(bytes);
-                imagenLabel.setIcon(imageIcon);
+                try{
+                    byte[] bytes = resultSet.getBytes("imagen_prd");
+                    ImageIcon imageIcon = new ImageIcon(bytes);
+                    imagenLabel.setIcon(imageIcon);
+                }catch (NullPointerException ignored){
+                    imagenLabel.setIcon(null);
+                }
             }
         }catch (SQLException ex){
-            System.out.println(ex.getMessage());
+            JOptionPane.showMessageDialog(null,ex.getMessage());
         }
     }
     private static byte[] convertirIconoABytes(Icon icon) throws IOException {
