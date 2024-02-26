@@ -25,7 +25,13 @@ public class Pag5_Compra {
         //Inicializamos el spinner
         SpinnerModel spinnerModel = new SpinnerNumberModel(1,1,20,1);
         cantidadSpinner.setModel(spinnerModel);
-
+        DefaultTableModel modeloCarrito = new DefaultTableModel();
+        modeloCarrito.addColumn("Producto ID");
+        modeloCarrito.addColumn("Nombre");
+        modeloCarrito.addColumn("Precio");
+        modeloCarrito.addColumn("Cantidad");
+        modeloCarrito.addColumn("Total");
+        table2.setModel(modeloCarrito);
         try {
             Connection connection = conexionDB.ConexionLocal();
 
@@ -52,7 +58,6 @@ public class Pag5_Compra {
         } catch (SQLException ex) {
             throw new RuntimeException(ex);
         }
-        actualizarTabla();
         table1.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
@@ -87,14 +92,23 @@ public class Pag5_Compra {
             @Override
             public void actionPerformed(ActionEvent e) {
                 int cantidadProducto = (Integer) cantidadSpinner.getValue();
-                int idFilaSeleccionada= Integer.parseInt(table1.getModel().getValueAt(table1.getSelectedRow(),0).toString());
+                int idProducto= Integer.parseInt(table1.getModel().getValueAt(table1.getSelectedRow(),0).toString());
+                String nombreProducto = table1.getModel().getValueAt(table1.getSelectedRow(),1).toString();
+                double precioProducto = Double.parseDouble(table1.getModel().getValueAt(table1.getSelectedRow(),3).toString());
+                double totalProducto = cantidadProducto*precioProducto;
+
                 Connection connection = conexionDB.ConexionLocal();
                 try {
-                    PreparedStatement ps = connection.prepareStatement("INSERT INTO Detalle(cantidad_producto, producto_id) VALUES (?, ?)");
-                    ps.setInt(1,cantidadProducto);
-                    ps.setInt(2,idFilaSeleccionada);
-                    ps.executeUpdate();
-                    actualizarTabla();
+                    PreparedStatement ps = connection.prepareStatement("SELECT stock FROM Productos WHERE producto_id = ?");
+                    ps.setInt(1,idProducto);
+                    ResultSet rs = ps.executeQuery();
+                    while (rs.next()){
+                        if (rs.getInt("stock")<cantidadProducto){
+                            JOptionPane.showMessageDialog(null,"La cantidad no puede ser mayor a la del stock");
+                        }else {
+                            actualizarTabla(modeloCarrito, idProducto,nombreProducto,precioProducto,cantidadProducto,totalProducto);
+                        }
+                    }
                 }catch (SQLException ex){
                     JOptionPane.showMessageDialog(null,ex.getMessage());
                 }catch (ArrayIndexOutOfBoundsException exception){
@@ -105,49 +119,23 @@ public class Pag5_Compra {
         ELIMINARButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                int idFilaSeleccionada= Integer.parseInt(table2.getModel().getValueAt(table2.getSelectedRow(),0).toString());
-                Connection connection = conexionDB.ConexionLocal();
-                try {
-                    PreparedStatement ps =connection.prepareStatement("DELETE FROM Detalle where detalle_id = ?");
-                    ps.setInt(1,idFilaSeleccionada);
-                    ps.executeUpdate();
-                    actualizarTabla();
-                }catch (SQLException ex){
-                    JOptionPane.showMessageDialog(null,ex.getMessage());
-                }catch (ArrayIndexOutOfBoundsException exception){
-                    JOptionPane.showMessageDialog(null, "Seleccione el producto que desea quitar del carrito");
+                int filaSeleccionada = table2.getSelectedRow();
+                if (filaSeleccionada != -1){
+                    modeloCarrito.removeRow(filaSeleccionada);
+                }else {
+                    JOptionPane.showMessageDialog(null,"Selecciona una fila antes de eliminar");
                 }
 
             }
         });
     }
 
-    public void actualizarTabla(){
+    public void actualizarTabla(DefaultTableModel modelo, int id,String nombre,double precio, int cantidad, double total){
         try {
-            Connection connection = conexionDB.ConexionLocal();
-
-            DefaultTableModel modelo = new DefaultTableModel();
-            table2.setModel(modelo);
-            PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM detallesVista");
-            ResultSet rs = preparedStatement.executeQuery();
-            ResultSetMetaData resultSetMetaData = rs.getMetaData();
-
-            int cantidadColumnas = resultSetMetaData.getColumnCount();
-
-            modelo.addColumn("Detalle ID");
-            modelo.addColumn("Nombre");
-            modelo.addColumn("Precio");
-            modelo.addColumn("Cantidad");
-            modelo.addColumn("Total");
-            while (rs.next()){
-                Object[] filas = new Object[cantidadColumnas];
-                for (int i=0;i<cantidadColumnas;i++){
-                    filas[i] = rs.getObject(i + 1);
-                }
-                modelo.addRow(filas);
-            }
-        } catch (SQLException ex) {
-            throw new RuntimeException(ex);
+            Object[] filas = {id, nombre, precio, cantidad, total};
+            modelo.addRow(filas);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(null,ex.getMessage());
         }
     }
     public void obtenerImagen(int filaSeleccionada){
