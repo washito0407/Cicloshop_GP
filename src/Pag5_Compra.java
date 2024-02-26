@@ -5,6 +5,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.*;
+import java.util.HashSet;
 
 public class Pag5_Compra {
     private JTable table1;
@@ -32,6 +33,8 @@ public class Pag5_Compra {
         modeloCarrito.addColumn("Cantidad");
         modeloCarrito.addColumn("Total");
         table2.setModel(modeloCarrito);
+        HashSet<String> productosCarrito= new HashSet<>();
+
         try {
             Connection connection = conexionDB.ConexionLocal();
 
@@ -96,6 +99,7 @@ public class Pag5_Compra {
                 String nombreProducto = table1.getModel().getValueAt(table1.getSelectedRow(),1).toString();
                 double precioProducto = Double.parseDouble(table1.getModel().getValueAt(table1.getSelectedRow(),3).toString());
                 double totalProducto = cantidadProducto*precioProducto;
+                boolean productoExiste = false;
 
                 Connection connection = conexionDB.ConexionLocal();
                 try {
@@ -106,7 +110,18 @@ public class Pag5_Compra {
                         if (rs.getInt("stock")<cantidadProducto){
                             JOptionPane.showMessageDialog(null,"La cantidad no puede ser mayor a la del stock");
                         }else {
-                            actualizarTabla(modeloCarrito, idProducto,nombreProducto,precioProducto,cantidadProducto,totalProducto);
+                            for (int i=0;i<table2.getRowCount();i++){
+                                if (idProducto==Integer.parseInt(table2.getValueAt(i,0).toString())){
+                                    productoExiste=true;
+                                    break;
+                                }
+                            }
+                            if (!productoExiste){
+                                actualizarTabla(modeloCarrito, idProducto,nombreProducto,precioProducto,cantidadProducto,totalProducto);
+                            }else {
+                                JOptionPane.showMessageDialog(null,"Ya se encuentra agregado el producto al carrito");
+                                productoExiste=false;
+                            }
                         }
                     }
                 }catch (SQLException ex){
