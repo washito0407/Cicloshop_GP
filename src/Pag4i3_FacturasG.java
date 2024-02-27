@@ -42,6 +42,36 @@ public class Pag4i3_FacturasG {
                 }
             }
         });
+        MOSTRARButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int filaSeleccionada = table1.getSelectedRow();
+                if (filaSeleccionada!=-1){
+                    int idFilaSeleccionda=Integer.parseInt(table1.getValueAt(filaSeleccionada,0).toString());
+                    Connection connection = conexionDB.ConexionLocal();
+                    try{
+                        PreparedStatement ps = connection.prepareStatement("SELECT F.factura_id, F.fecha, C.nombre_cln AS Nombre_Cliente, \n" +
+                                "       P.nombre_prd AS Nombre_Producto, D.cantidad_producto, P.precio_venta,\n" +
+                                "       (D.cantidad_producto* P.precio_venta) AS Subtotal\n" +
+                                "FROM Facturas F\n" +
+                                "JOIN Detalle D ON F.factura_id = D.factura_id\n" +
+                                "JOIN Productos P ON D.producto_id= P.producto_id\n" +
+                                "JOIN Clientes C ON F.cliente_id = C.cliente_id\n" +
+                                "WHERE F.factura_id=?");
+                        ps.setInt(1,idFilaSeleccionda);
+                        ResultSet rs = ps.executeQuery();
+                        while (rs.next()){
+                            System.out.println("Nombre del producto: "+rs.getString("Nombre_Producto"));
+                            System.out.println("Cantidad: "+rs.getInt("cantidad_producto"));
+                            System.out.println("Precio: "+rs.getDouble("precio_venta"));
+                            System.out.println("Subtotal: "+rs.getDouble("Subtotal"));
+                        }
+                    }catch (SQLException ex){
+                        JOptionPane.showMessageDialog(null,ex.getMessage(),"ERROR SQL",JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            }
+        });
     }
     public void actualizarTabla(){
         try {

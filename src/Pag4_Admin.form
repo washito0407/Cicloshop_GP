@@ -33,7 +33,7 @@
           <foreground color="-16777216"/>
           <horizontalTextPosition value="2"/>
           <icon value="imagenes/entrar.png"/>
-          <text value="INGRESAR "/>
+          <text value="PRODUCTOS"/>
         </properties>
       </component>
       <component id="dee67" class="javax.swing.JButton" binding="eliminarProductosButton">
@@ -45,7 +45,7 @@
           <foreground color="-16777216"/>
           <horizontalTextPosition value="2"/>
           <icon value="imagenes/x_prime.png"/>
-          <text value="ELIMINAR "/>
+          <text value="CAJEROS"/>
         </properties>
       </component>
       <component id="dc80a" class="javax.swing.JButton" binding="facturasButton">

@@ -34,7 +34,7 @@ public class Pag5i1_Factura {
                     "JOIN Detalle D ON F.factura_id = D.factura_id\n" +
                     "JOIN Productos P ON D.producto_id= P.producto_id\n" +
                     "JOIN Clientes C ON F.cliente_id = C.cliente_id\n" +
-                    "WHERE F.factura_id= ?;");
+                    "WHERE F.factura_id= ?");
             preparedStatement.setInt(1,ultimaFactura);
             ResultSet rs = preparedStatement.executeQuery();
             ResultSetMetaData resultSetMetaData = rs.getMetaData();

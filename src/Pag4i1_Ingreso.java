@@ -27,6 +27,7 @@ public class Pag4i1_Ingreso {
     private JTextField precioVentaField;
     private JTextField stockField;
     private JButton subirImagenButton;
+    private JButton limpiarButton;
     static JFrame frameIngresoP = new JFrame("Ingreso de Productos");
     ConexionDB conexionDB = new ConexionDB();
 
@@ -144,6 +145,12 @@ public class Pag4i1_Ingreso {
                 }
             }
         });
+        limpiarButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                actualizarCampos();
+            }
+        });
     }
 
     private void createUIComponents() {
@@ -212,17 +219,19 @@ public class Pag4i1_Ingreso {
                 }
                 modelo.addRow(filas);
             }
-            idField.setText("");
-            nombreField.setText("");
-            descripcionTextArea.setText("");
-            precioCompraField.setText("");
-            precioVentaField.setText("");
-            stockField.setText("");
-            imagenLabel.setIcon(null);
+            actualizarCampos();
         } catch (SQLException ex) {
             throw new RuntimeException(ex);
         }
-
+    }
+    public void actualizarCampos(){
+        idField.setText("");
+        nombreField.setText("");
+        descripcionTextArea.setText("");
+        precioCompraField.setText("");
+        precioVentaField.setText("");
+        stockField.setText("");
+        imagenLabel.setIcon(null);
     }
 }
 
