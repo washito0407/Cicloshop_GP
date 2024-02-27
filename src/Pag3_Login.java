@@ -55,7 +55,7 @@ public class Pag3_Login {
                             usuarioEncontrado=true;
                             frameLogin.dispose();
                             Pag4_Admin.frameAdminP.setContentPane(new Pag4_Admin().admin_pag);
-                            Pag4_Admin.frameAdminP.setSize(900,700);
+                            Pag4_Admin.frameAdminP.setSize(800,600);
                             Pag4_Admin.frameAdminP.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                             Pag4_Admin.frameAdminP.setVisible(true);
                             Pag4_Admin.frameAdminP.setLocationRelativeTo(null);

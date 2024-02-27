@@ -16,6 +16,7 @@
         </constraints>
         <properties>
           <background color="-10855846"/>
+          <foreground color="-394241"/>
           <text value="LOGIN"/>
         </properties>
       </component>
@@ -25,6 +26,7 @@
         </constraints>
         <properties>
           <background color="-10855846"/>
+          <foreground color="-394241"/>
           <text value="REGISTRO"/>
         </properties>
       </component>

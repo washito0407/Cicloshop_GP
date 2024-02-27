@@ -58,43 +58,45 @@ public class Pag5_Compra {
         FACTURARButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                frameCompra.dispose();
-                Pag5i_Cliente.frameCliente.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                Pag5i_Cliente.frameCliente.setContentPane(new Pag5i_Cliente().clientePanel);
-                Pag5i_Cliente.frameCliente.setSize(500,700);
-                Pag5i_Cliente.frameCliente.setVisible(true);
-                Pag5i_Cliente.frameCliente.setLocationRelativeTo(null);
+                if (table2.getModel().getRowCount()>0){
+                    frameCompra.dispose();
+                    Pag5i_Cliente.frameCliente.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                    Pag5i_Cliente.frameCliente.setContentPane(new Pag5i_Cliente().clientePanel);
+                    Pag5i_Cliente.frameCliente.setSize(500,700);
+                    Pag5i_Cliente.frameCliente.setVisible(true);
+                    Pag5i_Cliente.frameCliente.setLocationRelativeTo(null);
 
-                Connection connection = conexionDB.ConexionLocal();
-                int ultimaFactura=0;
-                try {
-                    int idTemp = 1727578721;
-                    PreparedStatement psTemp = connection.prepareStatement("INSERT INTO Facturas(cliente_id) VALUES (?)");
-                    psTemp.setInt(1,idTemp);
-                    psTemp.executeUpdate();
-                    PreparedStatement factura = connection.prepareStatement("SELECT MAX(factura_id) AS idFactura FROM Facturas");
-                    ResultSet rsFactura = factura.executeQuery();
-                    if (rsFactura.next()){
-                        ultimaFactura = rsFactura.getInt(1);
-                    }
-                    PreparedStatement ps = connection.prepareStatement("INSERT INTO Detalle(cantidad_producto, producto_id, factura_id) VALUES (?,?,?)");
-                    PreparedStatement actualizarStock = connection.prepareStatement("UPDATE Productos SET stock = stock - ? WHERE producto_id=?");
-                    for (int i = 0; i <table2.getRowCount(); i++) {
-                        ps.setInt(1,Integer.parseInt(table2.getValueAt(i,3).toString()));
-                        ps.setInt(2,Integer.parseInt(table2.getValueAt(i,0).toString()));
-                        ps.setInt(3,ultimaFactura);
-                        ps.executeUpdate();
+                    Connection connection = conexionDB.ConexionLocal();
+                    int ultimaFactura=0;
+                    try {
+                        int idTemp = 1727578721;
+                        PreparedStatement psTemp = connection.prepareStatement("INSERT INTO Facturas(cliente_id) VALUES (?)");
+                        psTemp.setInt(1,idTemp);
+                        psTemp.executeUpdate();
+                        PreparedStatement factura = connection.prepareStatement("SELECT MAX(factura_id) AS idFactura FROM Facturas");
+                        ResultSet rsFactura = factura.executeQuery();
+                        if (rsFactura.next()){
+                            ultimaFactura = rsFactura.getInt(1);
+                        }
+                        PreparedStatement ps = connection.prepareStatement("INSERT INTO Detalle(cantidad_producto, producto_id, factura_id) VALUES (?,?,?)");
+                        PreparedStatement actualizarStock = connection.prepareStatement("UPDATE Productos SET stock = stock - ? WHERE producto_id=?");
+                        for (int i = 0; i <table2.getRowCount(); i++) {
+                            ps.setInt(1,Integer.parseInt(table2.getValueAt(i,3).toString()));
+                            ps.setInt(2,Integer.parseInt(table2.getValueAt(i,0).toString()));
+                            ps.setInt(3,ultimaFactura);
+                            ps.executeUpdate();
 
-                        actualizarStock.setInt(1,Integer.parseInt(table2.getValueAt(i,3).toString()));
-                        actualizarStock.setInt(2,Integer.parseInt(table2.getValueAt(i,0).toString()));
-                        actualizarStock.executeUpdate();
+                            actualizarStock.setInt(1,Integer.parseInt(table2.getValueAt(i,3).toString()));
+                            actualizarStock.setInt(2,Integer.parseInt(table2.getValueAt(i,0).toString()));
+                            actualizarStock.executeUpdate();
+                        }
+                        actualizarTablaSQL();
+                    }catch (SQLException ex){
+                        JOptionPane.showMessageDialog(null,ex.getMessage());
                     }
-                    actualizarTablaSQL();
-                }catch (SQLException ex){
-                    JOptionPane.showMessageDialog(null,ex.getMessage());
+                }else {
+                    JOptionPane.showMessageDialog(null,"Ingrese al menos un producto al carrito","ERROR",JOptionPane.ERROR_MESSAGE);
                 }
-
-
             }
         });
         SELECCIONARButton.addActionListener(new ActionListener() {

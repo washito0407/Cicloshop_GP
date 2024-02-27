@@ -10,7 +10,7 @@ public class Pag2_Registro {
     private JButton REGRESARButton;
     private JTextField nombreField;
     private JTextField apellidoField;
-    private JTextField passwordField;
+    private JPasswordField passwordField;
     private JButton REGISTRARSEButton;
     public JPanel registro;
     static JFrame frameRegistro = new JFrame("Registro");
@@ -32,7 +32,7 @@ public class Pag2_Registro {
                     PreparedStatement ps = connection.prepareStatement("INSERT INTO Usuarios(user_id, nombre_usr,apellido_usr,password_usr) VALUES (4,?,?,?)");
                     ps.setString(1,nombreField.getText());
                     ps.setString(2,apellidoField.getText());
-                    ps.setString(3,passwordField.getText());
+                    ps.setString(3,String.valueOf(passwordField.getPassword()));
                     ps.executeUpdate();
                     JOptionPane.showMessageDialog(null, "Te has registrado correctamente (Prueba)");
                     frameRegistro.dispose();
