@@ -28,15 +28,19 @@ public class Pag2_Registro {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    Connection connection = conexionDB.ConexionLocal();
-                    PreparedStatement ps = connection.prepareStatement("INSERT INTO Usuarios(user_id, nombre_usr,apellido_usr,password_usr) VALUES (4,?,?,?)");
-                    ps.setString(1,nombreField.getText());
-                    ps.setString(2,apellidoField.getText());
-                    ps.setString(3,String.valueOf(passwordField.getPassword()));
-                    ps.executeUpdate();
-                    JOptionPane.showMessageDialog(null, "Te has registrado correctamente (Prueba)");
-                    frameRegistro.dispose();
-                    Pag1_Inicio.frame.setVisible(true);
+                    if (nombreField.getText().isEmpty() || apellidoField.getText().isEmpty() || String.valueOf(passwordField.getPassword()).isEmpty()){
+                        JOptionPane.showMessageDialog(null,"Ingrese los datos respectivos","INGRESO INCORRECTO",JOptionPane.ERROR_MESSAGE);
+                    }else {
+                        Connection connection = conexionDB.ConexionLocal();
+                        PreparedStatement ps = connection.prepareStatement("INSERT INTO Usuarios(user_id, nombre_usr,apellido_usr,password_usr) VALUES (4,?,?,?)");
+                        ps.setString(1,nombreField.getText());
+                        ps.setString(2,apellidoField.getText());
+                        ps.setString(3,String.valueOf(passwordField.getPassword()));
+                        ps.executeUpdate();
+                        JOptionPane.showMessageDialog(null, "Te has registrado correctamente");
+                        frameRegistro.dispose();
+                        Pag1_Inicio.frame.setVisible(true);
+                    }
                 }catch (SQLException exception){
                     JOptionPane.showMessageDialog(null, exception.getMessage(),"Error",JOptionPane.ERROR_MESSAGE);
                 }

@@ -47,7 +47,7 @@ public class Pag4_Admin {
                 frameAdminP.setVisible(false);
                 Pag4i3_FacturasG.frameFacturasP.setContentPane(new Pag4i3_FacturasG().pag4Facturas);
                 Pag4i3_FacturasG.frameFacturasP.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                Pag4i3_FacturasG.frameFacturasP.setSize(800, 800);
+                Pag4i3_FacturasG.frameFacturasP.setSize(800, 700);
                 Pag4i3_FacturasG.frameFacturasP.setVisible(true);
                 Pag4i3_FacturasG.frameFacturasP.setLocationRelativeTo(null);
             }

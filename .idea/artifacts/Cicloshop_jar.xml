@@ -1,0 +1,9 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="Cicloshop:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/Cicloshop_jar</output-path>
+    <root id="archive" name="Cicloshop_GP.jar">
+      <element id="module-output" name="Cicloshop_GP" />
+      <element id="extracted-dir" path="$USER_HOME$/Downloads/mysql-connector-j-8.2.0/mysql-connector-j-8.2.0/mysql-connector-j-8.2.0.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>
