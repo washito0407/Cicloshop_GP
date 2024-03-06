@@ -10,6 +10,7 @@ public class Pag5i_Cliente {
     private JButton CREARUSUARIOButton;
     private JTextField telefonoField;
     private JTextField nombreField;
+    private JTextField direccionField;
     public JPanel clientePanel;
     private JButton regresarButton;
     ConexionDB conexionDB=new ConexionDB();
@@ -70,16 +71,18 @@ public class Pag5i_Cliente {
                 }else{
                     try {
                         Connection connection = conexionDB.ConexionLocal();
-                        PreparedStatement ps = connection.prepareStatement("INSERT INTO CLIENTES(nombre, correo, telefono) VALUES (?,?,?)");
+                        PreparedStatement ps = connection.prepareStatement("INSERT INTO CLIENTES(nombre, correo, telefono, direccion) VALUES (?,?,?,?)");
                         ps.setString(1,nombreField.getText());
                         ps.setString(2, correoField.getText());
                         ps.setString(3, telefonoField.getText());
+                        ps.setString(4, direccionField.getText());
                         ps.executeUpdate();
                         actualizarTabla();
                         JOptionPane.showMessageDialog(null,"Se han ingresado los datos correctamente");
                         nombreField.setText("");
                         correoField.setText("");
                         telefonoField.setText("");
+                        direccionField.setText("");
                     }catch (SQLException exception){
                         JOptionPane.showMessageDialog(null,exception.getMessage(),"Error",JOptionPane.ERROR_MESSAGE);
                     }

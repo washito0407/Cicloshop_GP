@@ -8,6 +8,7 @@ public class Pag4i2_Eliminar {
     public JPanel Eliminar_u;
     private JButton regresarButton;
     private JTable table1;
+    private JLabel icono;
     private JButton modificarEstadoButton;
     private JButton eliminarButton;
     private JButton mostrarCButton;
