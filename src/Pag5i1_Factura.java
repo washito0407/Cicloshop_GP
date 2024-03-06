@@ -9,8 +9,7 @@ import com.itextpdf.text.pdf.draw.DottedLineSeparator;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.sql.*;
@@ -19,6 +18,8 @@ public class Pag5i1_Factura {
     private JTable table1;
     private JButton GENERARFACTURAButton;
     public JPanel pag5FacturaPanel;
+    private JPanel barraTop;
+    private JButton cerrarButton;
     static JFrame frameFacturaCompra = new JFrame("Compra facturada");
     static double precioTotal = 0;
     static int iFactura = 1;
@@ -27,8 +28,25 @@ public class Pag5i1_Factura {
     static int idFactura = -1;
     private DefaultTableModel modelo = new DefaultTableModel();
     static ConexionDB conexionDB = new ConexionDB();
+    int xMouse,yMouse;
 
     public Pag5i1_Factura() {
+        barraTop.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                xMouse = e.getX();
+                yMouse = e.getY();
+            }
+        });
+        barraTop.addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                super.mouseDragged(e);
+                int x = e.getXOnScreen();
+                int y = e.getYOnScreen();
+                frameFacturaCompra.setLocation(x - xMouse,y - yMouse);
+            }
+        });
         GENERARFACTURAButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -45,7 +63,7 @@ public class Pag5i1_Factura {
                     Font tituloFont = new Font(Font.FontFamily.COURIER, 26, Font.BOLD);
 
                     // Logo CicloShop
-                    Image imagen = Image.getInstance("src/imagenes/logo(Pequenio).jpg");
+                    Image imagen = Image.getInstance("imagenes/logo(Pequenio).jpg");
                     imagen.setAlignment(Element.ALIGN_CENTER);
                     imagen.setBorderColor(BaseColor.BLACK);
                     document.add(imagen);
@@ -81,6 +99,12 @@ public class Pag5i1_Factura {
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(null, ex.getMessage());
                 }
+            }
+        });
+        cerrarButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                frameFacturaCompra.dispose();
             }
         });
     }

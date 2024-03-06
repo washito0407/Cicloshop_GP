@@ -33,6 +33,9 @@ public class Pag3_Login {
                 {
                     usuarioEncontrado=true;
                     frameLogin.dispose();
+                    if (!Pag4_Admin.frameAdminP.isUndecorated()){
+                        Pag4_Admin.frameAdminP.setUndecorated(true);
+                    }
                     Pag4_Admin.frameAdminP.setContentPane(new Pag4_Admin().admin_pag);
                     Pag4_Admin.frameAdminP.setSize(800,600);
                     Pag4_Admin.frameAdminP.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -51,8 +54,11 @@ public class Pag3_Login {
                                 usuarioEncontrado=true;
                                 frameLogin.dispose();
                                 idCajeroActual = resultSetUsuarios.getInt(1);
+                                if (!Pag5_Compra.frameCompra.isUndecorated()){
+                                    Pag5_Compra.frameCompra.setUndecorated(true);
+                                }
                                 Pag5_Compra.frameCompra.setContentPane(new Pag5_Compra().pag5CompraPanel);
-                                Pag5_Compra.frameCompra.setSize(1200,700);
+                                Pag5_Compra.frameCompra.setSize(1000,500);
                                 Pag5_Compra.frameCompra.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                                 Pag5_Compra.frameCompra.setVisible(true);
                                 Pag5_Compra.frameCompra.setLocationRelativeTo(null);

@@ -50,6 +50,10 @@ public class Pag5i_Cliente {
 
                         Pag5i1_Factura factura = new Pag5i1_Factura();
                         factura.obtenerFactura(ultimaVenta);
+
+                        if (!Pag5i1_Factura.frameFacturaCompra.isUndecorated()){
+                            Pag5i1_Factura.frameFacturaCompra.setUndecorated(true);
+                        }
                         Pag5i1_Factura.frameFacturaCompra.setContentPane(factura.pag5FacturaPanel);
                         Pag5i1_Factura.frameFacturaCompra.setSize(500,400);
                         Pag5i1_Factura.frameFacturaCompra.setVisible(true);

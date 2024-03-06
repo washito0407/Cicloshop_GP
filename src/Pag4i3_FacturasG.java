@@ -1,7 +1,7 @@
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.*;
+import java.awt.event.*;
 import java.sql.*;
 
 public class Pag4i3_FacturasG {
@@ -10,11 +10,30 @@ public class Pag4i3_FacturasG {
     private JButton MOSTRARButton;
     private JButton ELIMINARButton;
     public JPanel pag4Facturas;
+    private JPanel barraTop;
     static JFrame frameFacturasP = new JFrame("Facturas");
     static ConexionDB conexionDB = new ConexionDB();
+    int xMouse,yMouse;
 
     public Pag4i3_FacturasG() {
         actualizarTabla();
+        REGRESARButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        barraTop.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                xMouse = e.getX();
+                yMouse = e.getY();
+            }
+        });
+        barraTop.addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                super.mouseDragged(e);
+                int x = e.getXOnScreen();
+                int y = e.getYOnScreen();
+                frameFacturasP.setLocation(x - xMouse,y - yMouse);
+            }
+        });
         REGRESARButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -51,6 +70,9 @@ public class Pag4i3_FacturasG {
                     Pag5i1_Factura factura = new Pag5i1_Factura();
                     factura.obtenerFactura(idVenta);
 
+                    if (!Pag5i1_Factura.frameFacturaCompra.isUndecorated()){
+                        Pag5i1_Factura.frameFacturaCompra.setUndecorated(true);
+                    }
                     Pag5i1_Factura.frameFacturaCompra.setContentPane(factura.pag5FacturaPanel);
                     Pag5i1_Factura.frameFacturaCompra.setSize(500,400);
                     Pag5i1_Factura.frameFacturaCompra.setVisible(true);

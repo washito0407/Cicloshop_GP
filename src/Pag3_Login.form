@@ -29,6 +29,7 @@
         </constraints>
         <properties>
           <background color="-2301735"/>
+          <font name="Consolas" size="16" style="0"/>
           <foreground color="-16316665"/>
           <horizontalAlignment value="0"/>
           <toolTipText value="AQUI INGRESE SU NOMBRE POR EJEMPLO &quot;JUAN&quot;"/>
@@ -53,6 +54,7 @@
         </constraints>
         <properties>
           <background color="-2301735"/>
+          <font name="Consolas" size="16" style="0"/>
           <foreground color="-16316665"/>
           <horizontalAlignment value="0"/>
           <toolTipText value="AQUI INGRESE SU CONTRASEÑA POR EJEMPLO &quot;ejemplo%..&quot;"/>

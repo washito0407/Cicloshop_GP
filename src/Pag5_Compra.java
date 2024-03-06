@@ -4,8 +4,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.InputStream;
 import java.sql.*;
@@ -21,14 +20,33 @@ public class Pag5_Compra {
     private JButton REALIZARCOMPRAButton;
     private JButton MODIFICARCANTIDADButton;
     private JButton REFRESCARPRODUCTOSButton;
+    private JPanel barraTop;
     static JFrame frameCompra = new JFrame("Compra");
     ConexionDB conexionDB = new ConexionDB();
     private DefaultTableModel modelo = new DefaultTableModel();
     static DefaultTableModel modeloCarrito = new DefaultTableModel();
+    int xMouse,yMouse;
 
     public Pag5_Compra() {
         table1.setDefaultEditor(Object.class, null);
         table2.setDefaultEditor(Object.class, null);
+        REGRESARButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        barraTop.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                xMouse = e.getX();
+                yMouse = e.getY();
+            }
+        });
+        barraTop.addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                super.mouseDragged(e);
+                int x = e.getXOnScreen();
+                int y = e.getYOnScreen();
+                frameCompra.setLocation(x - xMouse,y - yMouse);
+            }
+        });
 
         modeloCarrito = new DefaultTableModel();
         modeloCarrito.addColumn("Producto ID");

@@ -3,7 +3,7 @@
   <grid id="27dc6" binding="pag5CompraPanel" layout-manager="GridLayoutManager" row-count="8" column-count="5" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="0" left="0" bottom="0" right="0"/>
     <constraints>
-      <xy x="20" y="20" width="688" height="508"/>
+      <xy x="20" y="20" width="712" height="508"/>
     </constraints>
     <properties>
       <background color="-16316665"/>
@@ -37,6 +37,9 @@
         <properties>
           <background color="-14079703"/>
           <foreground color="-2104859"/>
+          <horizontalTextPosition value="2"/>
+          <icon value="imagenes/anadir-al-carrito.png"/>
+          <iconTextGap value="8"/>
           <text value="AGREGAR AL CARRITO"/>
         </properties>
       </component>
@@ -60,29 +63,10 @@
         <properties>
           <background color="-14079703"/>
           <foreground color="-2104859"/>
+          <horizontalTextPosition value="2"/>
+          <icon value="imagenes/boton-menos.png"/>
+          <iconTextGap value="8"/>
           <text value="QUITAR PRODUCTO"/>
-        </properties>
-      </component>
-      <component id="e9950" class="javax.swing.JLabel">
-        <constraints>
-          <grid row="1" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
-        </constraints>
-        <properties>
-          <icon value="imagenes/2 (1).png"/>
-          <text value=""/>
-        </properties>
-      </component>
-      <component id="a47c3" class="javax.swing.JButton" binding="REGRESARButton" default-binding="true">
-        <constraints>
-          <grid row="0" column="0" row-span="1" col-span="4" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false">
-            <preferred-size width="92" height="63"/>
-          </grid>
-        </constraints>
-        <properties>
-          <background color="-14079703"/>
-          <font name="Consolas" size="14" style="0"/>
-          <foreground color="-2104859"/>
-          <text value="REGRESAR"/>
         </properties>
       </component>
       <hspacer id="a2313">
@@ -140,6 +124,10 @@
         </constraints>
         <properties>
           <background color="-14079703"/>
+          <foreground color="-394241"/>
+          <horizontalTextPosition value="2"/>
+          <icon value="imagenes/monedas.png"/>
+          <iconTextGap value="8"/>
           <text value="MODIFICAR CANTIDAD"/>
         </properties>
       </component>
@@ -149,6 +137,10 @@
         </constraints>
         <properties>
           <background color="-14079703"/>
+          <foreground color="-394241"/>
+          <horizontalTextPosition value="2"/>
+          <icon value="imagenes/actualizar.png"/>
+          <iconTextGap value="8"/>
           <text value="REFRESCAR PRODUCTOS"/>
         </properties>
       </component>
@@ -162,6 +154,32 @@
           <text value="REALIZAR COMPRA"/>
         </properties>
       </component>
+      <grid id="30b62" binding="barraTop" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="0" vgap="0">
+        <margin top="0" left="0" bottom="0" right="0"/>
+        <constraints>
+          <grid row="0" column="0" row-span="1" col-span="5" vsize-policy="3" hsize-policy="3" anchor="1" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <background color="-16777216"/>
+        </properties>
+        <border type="none"/>
+        <children>
+          <component id="65388" class="javax.swing.JButton" binding="REGRESARButton">
+            <constraints>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="9" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <background color="-594449"/>
+              <borderPainted value="false"/>
+              <contentAreaFilled value="false"/>
+              <focusPainted value="false"/>
+              <font name="Arial" size="12" style="1"/>
+              <icon value="imagenes/returnIcon.png"/>
+              <text value=""/>
+            </properties>
+          </component>
+        </children>
+      </grid>
     </children>
   </grid>
 </form>

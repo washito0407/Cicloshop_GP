@@ -5,10 +5,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.sql.*;
@@ -28,10 +25,30 @@ public class Pag4i1_Ingreso {
     private JButton subirImagenButton;
     private JButton limpiarButton;
     private JComboBox estadoCB;
+    private JPanel barraTop;
+    private JPanel background;
     static JFrame frameIngresoP = new JFrame("Ingreso de Productos");
     ConexionDB conexionDB = new ConexionDB();
+    int xMouse,yMouse;
 
     public Pag4i1_Ingreso() {
+        regresarButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        barraTop.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                xMouse = e.getX();
+                yMouse = e.getY();
+            }
+        });
+        barraTop.addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                super.mouseDragged(e);
+                int x = e.getXOnScreen();
+                int y = e.getYOnScreen();
+                frameIngresoP.setLocation(x - xMouse,y - yMouse);
+            }
+        });
         table1.setDefaultEditor(Object.class, null);
         actualizarTabla();
         table1.getSelectionModel().addListSelectionListener(new ListSelectionListener() {

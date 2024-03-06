@@ -1,23 +1,42 @@
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.*;
+import java.awt.event.*;
 import java.sql.*;
 
 public class Pag4i2_Eliminar {
     public JPanel Eliminar_u;
     private JButton regresarButton;
     private JTable table1;
-    private JLabel icono;
     private JButton modificarEstadoButton;
     private JButton eliminarButton;
     private JButton mostrarCButton;
     private JButton modificarCButton;
+    private JPanel barraTop;
     static JFrame frameEliminarP = new JFrame("Eliminar Productos");
     ConexionDB conexionDB = new ConexionDB();
+    int xMouse,yMouse;
 
     public Pag4i2_Eliminar() {
         actualizarTabla();
+        regresarButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+        barraTop.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                xMouse = e.getX();
+                yMouse = e.getY();
+            }
+        });
+        barraTop.addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                super.mouseDragged(e);
+                int x = e.getXOnScreen();
+                int y = e.getYOnScreen();
+                frameEliminarP.setLocation(x - xMouse,y - yMouse);
+            }
+        });
         regresarButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -86,7 +105,7 @@ public class Pag4i2_Eliminar {
                         table1.getColumnModel().getColumn(3).setMinWidth(100);
                         table1.getTableHeader().getColumnModel().getColumn(3).setMaxWidth(100);
                         table1.getTableHeader().getColumnModel().getColumn(3).setMinWidth(100);
-                        mostrarCButton.setText("Ocultar Contraseñas");
+                        mostrarCButton.setText("OCULTAR CONTRASEÑAS");
                     }
                     else {
                         JOptionPane.showMessageDialog(null,"Contraseña incorrecta");
@@ -96,7 +115,7 @@ public class Pag4i2_Eliminar {
                     table1.getColumnModel().getColumn(3).setMinWidth(0);
                     table1.getTableHeader().getColumnModel().getColumn(3).setMaxWidth(0);
                     table1.getTableHeader().getColumnModel().getColumn(3).setMinWidth(0);
-                    mostrarCButton.setText("Mostrar Contraseñas");
+                    mostrarCButton.setText("MOSTRAR CONTRASEÑAS");
                 }
             }
         });

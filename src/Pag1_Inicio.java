@@ -1,17 +1,39 @@
 import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.border.LineBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 
 public class Pag1_Inicio {
     public JPanel login;
     private JButton LOGINButton;
     private JButton REGISTROButton;
+    private JPanel barraTop;
+    private JButton cerrarButton;
     static JFrame frame = new JFrame("CICLOSHOP");
+    int xMouse,yMouse;
 
     public Pag1_Inicio() {
+        cerrarButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         LOGINButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         REGISTROButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+        barraTop.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                xMouse = e.getX();
+                yMouse = e.getY();
+            }
+        });
+        barraTop.addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                super.mouseDragged(e);
+                int x = e.getXOnScreen();
+                int y = e.getYOnScreen();
+                frame.setLocation(x - xMouse,y - yMouse);
+            }
+        });
         REGISTROButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -38,6 +60,12 @@ public class Pag1_Inicio {
                 Pag3_Login.frameLogin.setSize(450,500);
                 Pag3_Login.frameLogin.setVisible(true);
                 Pag3_Login.frameLogin.setLocationRelativeTo(null);
+            }
+        });
+        cerrarButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.exit(0);
             }
         });
     }
