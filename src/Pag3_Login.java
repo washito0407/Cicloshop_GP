@@ -11,6 +11,7 @@ public class Pag3_Login {
     private JButton REGRESARButton;
     static JFrame frameLogin = new JFrame("Login CICLOSHOP");
     ConexionDB conexionDB = new ConexionDB();
+    static int idCajeroActual = -1;
 
     public Pag3_Login() {
 
@@ -24,53 +25,46 @@ public class Pag3_Login {
         INGRESARButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                try {
-                    Connection connection = conexionDB.ConexionLocal();
-                    boolean usuarioEncontrado=false;
-
-                    //SQL para la tabla de Usuarios
-                    PreparedStatement ps = connection.prepareStatement("SELECT nombre_usr, password_usr FROM Usuarios");
-                    ResultSet resultSetUsuarios = ps.executeQuery();
-                    while (resultSetUsuarios.next()&&!usuarioEncontrado){
-                        if (resultSetUsuarios.getString("nombre_usr").equals(nombreTextField.getText())
-                                && resultSetUsuarios.getString("password_usr").equals(String.valueOf(passwordField.getPassword())))
-                        {
-                            usuarioEncontrado=true;
-                            frameLogin.dispose();
-                            Pag5_Compra.frameCompra.setContentPane(new Pag5_Compra().pag5CompraPanel);
-                            Pag5_Compra.frameCompra.setSize(1200,700);
-                            Pag5_Compra.frameCompra.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                            Pag5_Compra.frameCompra.setVisible(true);
-                            Pag5_Compra.frameCompra.setLocationRelativeTo(null);
+                boolean usuarioEncontrado=false;
+                if (("admin").equals(nombreTextField.getText())
+                        && ("admin").equals(String.valueOf(passwordField.getPassword())))
+                {
+                    usuarioEncontrado=true;
+                    frameLogin.dispose();
+                    Pag4_Admin.frameAdminP.setContentPane(new Pag4_Admin().admin_pag);
+                    Pag4_Admin.frameAdminP.setSize(800,600);
+                    Pag4_Admin.frameAdminP.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                    Pag4_Admin.frameAdminP.setVisible(true);
+                    Pag4_Admin.frameAdminP.setLocationRelativeTo(null);
+                }else {
+                    try {
+                        Connection connection = conexionDB.ConexionLocal();
+                        //SQL para la tabla de Usuarios
+                        PreparedStatement ps = connection.prepareStatement("SELECT * FROM CAJEROS");
+                        ResultSet resultSetUsuarios = ps.executeQuery();
+                        while (resultSetUsuarios.next()&&!usuarioEncontrado){
+                            if (resultSetUsuarios.getString(2).equals(nombreTextField.getText())
+                                    && resultSetUsuarios.getString(4).equals(String.valueOf(passwordField.getPassword())))
+                            {
+                                usuarioEncontrado=true;
+                                frameLogin.dispose();
+                                idCajeroActual = resultSetUsuarios.getInt(1);
+                                Pag5_Compra.frameCompra.setContentPane(new Pag5_Compra().pag5CompraPanel);
+                                Pag5_Compra.frameCompra.setSize(1200,700);
+                                Pag5_Compra.frameCompra.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                                Pag5_Compra.frameCompra.setVisible(true);
+                                Pag5_Compra.frameCompra.setLocationRelativeTo(null);
+                            }
                         }
+                    } catch (Exception exception){
+                            JOptionPane.showMessageDialog(null,"Error: "+exception.getMessage(),"ERROR SQL",JOptionPane.ERROR_MESSAGE);
                     }
-
-                    //SQL para la tabla de Administradores
-                    PreparedStatement psAdmins = connection.prepareStatement("SELECT nombre_adm, password_adm FROM Administradores");
-                    ResultSet resultSetAdmins= psAdmins.executeQuery();
-                    while (resultSetAdmins.next()&&!usuarioEncontrado){
-                        if (resultSetAdmins.getString("nombre_adm").equals(nombreTextField.getText())
-                                && resultSetAdmins.getString("password_adm").equals(String.valueOf(passwordField.getPassword())))
-                        {
-                            usuarioEncontrado=true;
-                            frameLogin.dispose();
-                            Pag4_Admin.frameAdminP.setContentPane(new Pag4_Admin().admin_pag);
-                            Pag4_Admin.frameAdminP.setSize(800,600);
-                            Pag4_Admin.frameAdminP.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                            Pag4_Admin.frameAdminP.setVisible(true);
-                            Pag4_Admin.frameAdminP.setLocationRelativeTo(null);
-                        }
-                    }
-                    if (!usuarioEncontrado){
-                        JOptionPane.showMessageDialog(null,"Ingrese datos correctos");
-                        nombreTextField.setText("");
-                        passwordField.setText("");
-                    }
-                } catch (Exception exception){
-                    System.out.println(exception.getMessage());
                 }
-
-
+                if (!usuarioEncontrado){
+                    JOptionPane.showMessageDialog(null,"Ingrese datos correctos");
+                    nombreTextField.setText("");
+                    passwordField.setText("");
+                }
             }
         });
     }

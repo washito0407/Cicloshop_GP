@@ -3,13 +3,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class Pag2_Registro {
     private JButton REGRESARButton;
     private JTextField nombreField;
-    private JTextField apellidoField;
     private JPasswordField passwordField;
     private JButton REGISTRARSEButton;
     public JPanel registro;
@@ -27,24 +25,24 @@ public class Pag2_Registro {
         REGISTRARSEButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                try {
-                    if (nombreField.getText().isEmpty() || apellidoField.getText().isEmpty() || String.valueOf(passwordField.getPassword()).isEmpty()){
-                        JOptionPane.showMessageDialog(null,"Ingrese los datos respectivos","INGRESO INCORRECTO",JOptionPane.ERROR_MESSAGE);
-                    }else {
+                String nombreIn = nombreField.getText();
+                String passIn = String.valueOf(passwordField.getPassword());
+                if (nombreIn.isEmpty() || passIn.isEmpty()){
+                    JOptionPane.showMessageDialog(null,"Ingrese valores correctos","Valores Incorrectos",JOptionPane.ERROR_MESSAGE);
+                }else {
+                    try {
                         Connection connection = conexionDB.ConexionLocal();
-                        PreparedStatement ps = connection.prepareStatement("INSERT INTO Usuarios(user_id, nombre_usr,apellido_usr,password_usr) VALUES (4,?,?,?)");
-                        ps.setString(1,nombreField.getText());
-                        ps.setString(2,apellidoField.getText());
-                        ps.setString(3,String.valueOf(passwordField.getPassword()));
+                        PreparedStatement ps = connection.prepareStatement("INSERT INTO CAJEROS(nombre, pass_cajero) VALUES (?,?)");
+                        ps.setString(1,nombreIn);
+                        ps.setString(2,passIn);
                         ps.executeUpdate();
-                        JOptionPane.showMessageDialog(null, "Te has registrado correctamente");
-                        frameRegistro.dispose();
-                        Pag1_Inicio.frame.setVisible(true);
+                        JOptionPane.showMessageDialog(null,"Se ha ingresado un nuevo cajero correctamente");
+                        nombreField.setText("");
+                        passwordField.setText("");
+                    }catch (SQLException ex){
+                        JOptionPane.showMessageDialog(null,"Error: "+ex.getMessage(),"ERROR SQL",JOptionPane.ERROR_MESSAGE);
                     }
-                }catch (SQLException exception){
-                    JOptionPane.showMessageDialog(null, exception.getMessage(),"Error",JOptionPane.ERROR_MESSAGE);
                 }
-
             }
         });
     }

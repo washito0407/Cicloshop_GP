@@ -4,15 +4,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.*;
 public class Pag5i_Cliente {
-    private JTextField nombreField;
+    private JTextField correoField;
     private JTable table1;
     private JButton SELECCIONARUSUARIOButton;
     private JButton CREARUSUARIOButton;
-    private JTextField apellidoField;
-    private JTextField direccionField;
-    private JTextField celularField;
-    private JTextField cedulaField;
-    private JTextField emailField;
+    private JTextField telefonoField;
+    private JTextField nombreField;
     public JPanel clientePanel;
     private JButton regresarButton;
     ConexionDB conexionDB=new ConexionDB();
@@ -24,61 +21,68 @@ public class Pag5i_Cliente {
             @Override
             public void actionPerformed(ActionEvent e) {
                 int filaSeleccionada = table1.getSelectedRow();
-                int ultimaFactura=0;
-                if (filaSeleccionada != -1){
+                if (filaSeleccionada!=-1){
+                    int idCliente = Integer.parseInt(table1.getValueAt(filaSeleccionada,0).toString());
                     try {
                         Connection connection = conexionDB.ConexionLocal();
-                        PreparedStatement factura = connection.prepareStatement("SELECT MAX(factura_id) AS idFactura FROM Facturas");
-                        ResultSet rsFactura = factura.executeQuery();
-                        if (rsFactura.next()){
-                            ultimaFactura = rsFactura.getInt(1);
-                        }
-
-                        int idClient = Integer.parseInt(table1.getValueAt(filaSeleccionada, 0).toString());
-                        PreparedStatement ps = connection.prepareStatement("UPDATE Facturas SET cliente_id=? WHERE factura_id=?");
-                        ps.setInt(1,idClient);
-                        ps.setInt(2, ultimaFactura);
+                        PreparedStatement ps = connection.prepareStatement("INSERT INTO VENTAS(id_cliente, id_cajero) VALUES (?,?)");
+                        ps.setInt(1,idCliente);
+                        ps.setInt(2,Pag3_Login.idCajeroActual);
                         ps.executeUpdate();
 
+                        PreparedStatement obtenerUltimaVenta = connection.prepareStatement("SELECT MAX(id_v) FROM VENTAS");
+                        ResultSet rs = obtenerUltimaVenta.executeQuery();
+                        rs.next();
+                        int ultimaVenta = rs.getInt("MAX(id_v)");
+                        PreparedStatement generarFactura = connection.prepareStatement("INSERT INTO DETALLES(id_v, id_p, cantidad_p) VALUES (?,?,?)");
+                        for (int i = 0; i< Pag5_Compra.modeloCarrito.getRowCount(); i++){
+                            generarFactura.setInt(1, ultimaVenta);
+                            generarFactura.setInt(2,Integer.parseInt(Pag5_Compra.modeloCarrito.getValueAt(i,0).toString()));
+                            generarFactura.setInt(3,Integer.parseInt(Pag5_Compra.modeloCarrito.getValueAt(i,3).toString()));
+                            generarFactura.executeUpdate();
+                            Pag5_Compra.modeloCarrito.removeRow(i);
+                        }
+                        JOptionPane.showMessageDialog(null,"Se ha realizado la compra correctamente");
 
-                        frameCliente.setVisible(false);
-                        Pag5_Compra.frameCompra.dispose();
-                        Pag5i1_Factura.frameFacturaCompra.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                        Pag5i1_Factura.frameFacturaCompra.setContentPane(new Pag5i1_Factura().pag5FacturaPanel);
-                        Pag5i1_Factura.frameFacturaCompra.setSize(500,700);
+                        Pag5_Compra.frameCompra.setVisible(true);
+                        frameCliente.dispose();
+
+                        Pag5i1_Factura factura = new Pag5i1_Factura();
+                        factura.obtenerFactura(ultimaVenta);
+                        Pag5i1_Factura.frameFacturaCompra.setContentPane(factura.pag5FacturaPanel);
+                        Pag5i1_Factura.frameFacturaCompra.setSize(500,400);
                         Pag5i1_Factura.frameFacturaCompra.setVisible(true);
                         Pag5i1_Factura.frameFacturaCompra.setLocationRelativeTo(null);
                     }catch (SQLException ex){
-                        JOptionPane.showMessageDialog(null,ex.getMessage());
+                        JOptionPane.showMessageDialog(null,"Error: "+ex.getMessage(),"SQL ERROR",JOptionPane.ERROR_MESSAGE);
                     }
-                }else{
-                    JOptionPane.showMessageDialog(null,"Seleccione un cliente");
+                }else {
+                    JOptionPane.showMessageDialog(null,"Seleccione un cliente","Fila no seleccionada",JOptionPane.ERROR_MESSAGE);
                 }
+
             }
         });
         CREARUSUARIOButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Connection connection = conexionDB.ConexionLocal();
-                try {
-                    PreparedStatement ps = connection.prepareStatement("INSERT INTO Clientes(" +
-                            "cliente_id, nombre_cln, apellido_cln, direccion_cln, celular_cln, email_cln) VALUES (?,?,?,?,?,?)");
-                    ps.setInt(1,Integer.parseInt(cedulaField.getText()));
-                    ps.setString(2,nombreField.getText());
-                    ps.setString(3,apellidoField.getText());
-                    ps.setString(4,direccionField.getText());
-                    ps.setString(5,celularField.getText());
-                    ps.setString(6,emailField.getText());
-                    ps.executeUpdate();
-                    actualizarTabla();
-                    cedulaField.setText("");
-                    nombreField.setText("");
-                    apellidoField.setText("");
-                    direccionField.setText("");
-                    celularField.setText("");
-                    emailField.setText("");
-                }catch (SQLException ex){
-                    JOptionPane.showMessageDialog(null,ex.getMessage());
+                if (nombreField.getText().isEmpty() || telefonoField.getText().isEmpty() || correoField.getText().isEmpty()){
+                    JOptionPane.showMessageDialog(null, "Todos los campos deben estar completados");
+                }else{
+                    try {
+                        Connection connection = conexionDB.ConexionLocal();
+                        PreparedStatement ps = connection.prepareStatement("INSERT INTO CLIENTES(nombre, correo, telefono) VALUES (?,?,?)");
+                        ps.setString(1,nombreField.getText());
+                        ps.setString(2, correoField.getText());
+                        ps.setString(3, telefonoField.getText());
+                        ps.executeUpdate();
+                        actualizarTabla();
+                        JOptionPane.showMessageDialog(null,"Se han ingresado los datos correctamente");
+                        nombreField.setText("");
+                        correoField.setText("");
+                        telefonoField.setText("");
+                    }catch (SQLException exception){
+                        JOptionPane.showMessageDialog(null,exception.getMessage(),"Error",JOptionPane.ERROR_MESSAGE);
+                    }
                 }
             }
         });
@@ -96,7 +100,7 @@ public class Pag5i_Cliente {
 
             DefaultTableModel modelo = new DefaultTableModel();
             table1.setModel(modelo);
-            PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM Clientes");
+            PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM CLIENTES");
             ResultSet rs = preparedStatement.executeQuery();
             ResultSetMetaData resultSetMetaData = rs.getMetaData();
 
@@ -104,10 +108,9 @@ public class Pag5i_Cliente {
 
             modelo.addColumn("Cliente ID");
             modelo.addColumn("Nombre");
-            modelo.addColumn("Apellido");
-            modelo.addColumn("Direccion");
-            modelo.addColumn("Celular");
             modelo.addColumn("Email");
+            modelo.addColumn("Telefono");
+            modelo.addColumn("Direccion");
             while (rs.next()){
                 Object[] filas = new Object[cantidadColumnas];
                 for (int i=0;i<cantidadColumnas;i++){

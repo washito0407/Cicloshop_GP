@@ -1,39 +1,22 @@
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
 import java.sql.*;
 
 public class Pag4i2_Eliminar {
     public JPanel Eliminar_u;
     private JButton regresarButton;
-    private JLabel icono;
     private JTable table1;
-    private JButton editarButton;
+    private JButton modificarEstadoButton;
     private JButton eliminarButton;
-    private JTextField idField;
-    private JTextField nombreField;
-    private JTextField apellidoField;
-    private JTextField passwordField;
+    private JButton mostrarCButton;
+    private JButton modificarCButton;
     static JFrame frameEliminarP = new JFrame("Eliminar Productos");
     ConexionDB conexionDB = new ConexionDB();
 
     public Pag4i2_Eliminar() {
         actualizarTabla();
-        table1.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                if (!e.getValueIsAdjusting()) {
-                    int filaSeleccionada = table1.getSelectedRow();
-                    if (filaSeleccionada != -1) {
-                        obtenerDatos(filaSeleccionada);
-                    }
-                }
-            }
-        });
         regresarButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -41,57 +24,141 @@ public class Pag4i2_Eliminar {
                 Pag4_Admin.frameAdminP.setVisible(true);
             }
         });
-        editarButton.addActionListener(new ActionListener() {
+        modificarEstadoButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Connection connection = conexionDB.ConexionLocal();
                 try {
-                    PreparedStatement preparedStatement = connection.prepareStatement("UPDATE Usuarios\n" +
-                            "SET user_id = ?, nombre_usr = ?, apellido_usr = ?, password_usr = ?\n" +
-                            "WHERE user_id = ?");
-                    preparedStatement.setInt(1, Integer.parseInt(idField.getText()));
-                    preparedStatement.setString(2, nombreField.getText());
-                    preparedStatement.setString(3, apellidoField.getText());
-                    preparedStatement.setString(4, passwordField.getText());
-                    preparedStatement.setInt(5, Integer.parseInt(idField.getText()));
-                    preparedStatement.executeUpdate();
-                    actualizarTabla();
-                    JOptionPane.showMessageDialog(null,"Se han modificado los datos correctamente");
+                    int filaSeleccionada = table1.getSelectedRow();
+                    if (filaSeleccionada!=-1){
+                        Connection connection = conexionDB.ConexionLocal();
+                        String estado = table1.getValueAt(filaSeleccionada,2).toString();
+                        PreparedStatement ps = connection.prepareStatement("UPDATE CAJEROS SET estado_c= ? WHERE id_cajero = ?");
+                        if (estado.equals("ACTIVO")){
+                            ps.setString(1,"INACTIVO");
+                        }else {
+                            ps.setString(1,"ACTIVO");
+                        }
+                        ps.setInt(2,Integer.parseInt(table1.getValueAt(filaSeleccionada,0).toString()));
+                        ps.executeUpdate();
+                        actualizarTabla();
+                        JOptionPane.showMessageDialog(null,"Se ha modificado el estado correctamente");
+                    }else {
+                        JOptionPane.showMessageDialog(null,"Seleccione un cajero","Fila no seleccionada",JOptionPane.ERROR_MESSAGE);
+                    }
                 }catch (SQLException ex){
-                    System.out.println(ex.getMessage());
+                    JOptionPane.showMessageDialog(null,"Error: "+ex.getMessage(),"ERROR SQL",JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
         eliminarButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Connection connection = conexionDB.ConexionLocal();
-                try {
-                    PreparedStatement ps = connection.prepareStatement("DELETE FROM Usuarios WHERE user_id = ?");
-                    ps.setInt(1, Integer.parseInt(idField.getText()));
-                    ps.executeUpdate();
-                    actualizarTabla();
-                    JOptionPane.showMessageDialog(null,"Se han eliminado los datos correctamente");
-                }catch (SQLException sqlException){
-                    JOptionPane.showMessageDialog(null,sqlException.getMessage(),"Error de sintaxis",JOptionPane.ERROR_MESSAGE);
+                int filaSeleccionada = table1.getSelectedRow();
+                if (filaSeleccionada!=-1){
+                    int option = JOptionPane.showConfirmDialog(null,"Estas seguro de eliminar al cajero?","Confirmar eliminación",JOptionPane.YES_NO_OPTION);
+                    if (option == JOptionPane.YES_OPTION){
+                        try {
+                            Connection connection = conexionDB.ConexionLocal();
+                            PreparedStatement ps = connection.prepareStatement("DELETE FROM CAJEROS WHERE id_cajero = ?");
+                            ps.setInt(1,Integer.parseInt(table1.getValueAt(filaSeleccionada,0).toString()));
+                            ps.executeUpdate();
+                            actualizarTabla();
+                        }catch (SQLException ex){
+                            JOptionPane.showMessageDialog(null,"Error: "+ex.getMessage(),"ERROR SQL",JOptionPane.ERROR_MESSAGE);
+                        }
+                    }
+                }else {
+                    JOptionPane.showMessageDialog(null,"Seleccione un cajero","Fila no seleccionada",JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+        mostrarCButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (table1.getColumnModel().getColumn(3).getMaxWidth()==0){
+                    JPasswordField pwd = new JPasswordField(10);
+                    int action = JOptionPane.showConfirmDialog(null, pwd,"Ingresa la clave",JOptionPane.OK_CANCEL_OPTION);
+                    if(action == JOptionPane.CANCEL_OPTION || action == JOptionPane.CLOSED_OPTION)JOptionPane.showMessageDialog(null,"Cancela, X o selecciona la tecla de escape");
+                    String passIn = String.valueOf(pwd.getPassword());
+                    if (passIn.equals("admin")){
+                        table1.getColumnModel().getColumn(3).setMaxWidth(100);
+                        table1.getColumnModel().getColumn(3).setMinWidth(100);
+                        table1.getTableHeader().getColumnModel().getColumn(3).setMaxWidth(100);
+                        table1.getTableHeader().getColumnModel().getColumn(3).setMinWidth(100);
+                        mostrarCButton.setText("Ocultar Contraseñas");
+                    }
+                    else {
+                        JOptionPane.showMessageDialog(null,"Contraseña incorrecta");
+                    }
+                }else {
+                    table1.getColumnModel().getColumn(3).setMaxWidth(0);
+                    table1.getColumnModel().getColumn(3).setMinWidth(0);
+                    table1.getTableHeader().getColumnModel().getColumn(3).setMaxWidth(0);
+                    table1.getTableHeader().getColumnModel().getColumn(3).setMinWidth(0);
+                    mostrarCButton.setText("Mostrar Contraseñas");
+                }
+            }
+        });
+        modificarCButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int filaSeleccionda = table1.getSelectedRow();
+                if (filaSeleccionda!=-1){
+                    String passCajero = table1.getValueAt(filaSeleccionda,3).toString();
+                    JPasswordField pwd = new JPasswordField(10);
+                    int action = JOptionPane.showConfirmDialog(null, pwd,"Ingresa la contraseña actual del cajero",JOptionPane.OK_CANCEL_OPTION);
+                    if(action == JOptionPane.CANCEL_OPTION || action == JOptionPane.CLOSED_OPTION) {
+                        JOptionPane.showMessageDialog(null, "Cancela, X o selecciona la tecla de escape");
+                    }else {
+                        String passIn = String.valueOf(pwd.getPassword());
+                        if (passIn.equals(passCajero)){
+                            JPasswordField pwdNueva = new JPasswordField(10);
+                            int actionNueva = JOptionPane.showConfirmDialog(null, pwdNueva,"Ingresa la nueva contraseña",JOptionPane.OK_CANCEL_OPTION);
+                            if(actionNueva == JOptionPane.CANCEL_OPTION || actionNueva== JOptionPane.CLOSED_OPTION){
+                                JOptionPane.showMessageDialog(null,"Cancela, X o selecciona la tecla de escape");
+                            }
+                            else {
+                                String passNuevaIn = String.valueOf(pwdNueva.getPassword());
+                                try {
+                                    Connection connection = conexionDB.ConexionLocal();
+                                    PreparedStatement ps = connection.prepareStatement("UPDATE CAJEROS SET pass_cajero = ? WHERE id_cajero = ?");
+                                    ps.setString(1,passNuevaIn);
+                                    ps.setInt(2,Integer.parseInt(table1.getValueAt(filaSeleccionda,0).toString()));
+                                    ps.executeUpdate();
+                                    JOptionPane.showMessageDialog(null,"Se ha registrado la nueva contraseña correctamente");
+                                    actualizarTabla();
+                                }catch (SQLException ex){
+                                    JOptionPane.showMessageDialog(null,"Error: "+ex.getMessage(),"ERROR SQL",JOptionPane.ERROR_MESSAGE);
+                                }
+                            }
+                        }else{
+                            JOptionPane.showMessageDialog(null,"Contraseña Incorrecta","",JOptionPane.ERROR_MESSAGE);
+                        }
+                    }
+                }else {
+                    JOptionPane.showMessageDialog(null,"Seleccione un cajero","Fila no seleccionada",JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
     }
     public void actualizarTabla(){
         try {
-            Connection connection = conexionDB.ConexionLocal();
             DefaultTableModel modelo = new DefaultTableModel();
             table1.setModel(modelo);
-            PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM Usuarios");
+            table1.setDefaultEditor(Object.class, null);
+            table1.getTableHeader().setReorderingAllowed(false) ;
+
+            Connection connection = conexionDB.ConexionLocal();
+            PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM CAJEROS");
             ResultSet rs = preparedStatement.executeQuery();
             ResultSetMetaData resultSetMetaData = rs.getMetaData();
+
             int cantidadColumnas = resultSetMetaData.getColumnCount();
 
-            modelo.addColumn("Usuario ID");
+            modelo.addColumn("ID");
             modelo.addColumn("Nombre");
-            modelo.addColumn("Apellido");
-            modelo.addColumn("Contraseña");
+            modelo.addColumn("Estado");
+            modelo.addColumn("Password");
             while (rs.next()){
                 Object[] filas = new Object[cantidadColumnas];
                 for (int i=0;i<cantidadColumnas;i++){
@@ -99,25 +166,13 @@ public class Pag4i2_Eliminar {
                 }
                 modelo.addRow(filas);
             }
+            table1.getColumnModel().getColumn(3).setMaxWidth(0);
+            table1.getColumnModel().getColumn(3).setMinWidth(0);
+            table1.getTableHeader().getColumnModel().getColumn(3).setMaxWidth(0);
+            table1.getTableHeader().getColumnModel().getColumn(3).setMinWidth(0);
+
         } catch (SQLException ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-    private void obtenerDatos(int filaSeleccionada){
-        try {
-            Connection connection = conexionDB.ConexionLocal();
-            int idFilaSeleccionada= Integer.parseInt(table1.getModel().getValueAt(filaSeleccionada,0).toString());
-            PreparedStatement ps = connection.prepareStatement("SELECT * FROM Usuarios WHERE user_id = ?");
-            ps.setInt(1, idFilaSeleccionada);
-            ResultSet resultSet = ps.executeQuery();
-            if (resultSet.next()){
-                idField.setText(String.valueOf(resultSet.getInt("user_id")));
-                nombreField.setText(resultSet.getString("nombre_usr"));
-                apellidoField.setText(resultSet.getString("apellido_usr"));
-                passwordField.setText(resultSet.getString("password_usr"));
-            }
-        }catch (SQLException ex){
-            System.out.println(ex.getMessage());
-        }
+            JOptionPane.showMessageDialog(null, ex.getMessage());
+        }catch (NullPointerException ignored){}
     }
 }

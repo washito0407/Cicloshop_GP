@@ -1,69 +1,251 @@
+import com.itextpdf.text.*;
+import com.itextpdf.text.Font;
+import com.itextpdf.text.Image;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.text.pdf.draw.DottedLineSeparator;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.sql.*;
 
 public class Pag5i1_Factura {
     private JTable table1;
-    private JFormattedTextField formattedTextField1;
-    private JButton FACTURARButton;
     private JButton GENERARFACTURAButton;
     public JPanel pag5FacturaPanel;
-    private JButton regresarButton;
     static JFrame frameFacturaCompra = new JFrame("Compra facturada");
-    ConexionDB conexionDB=new ConexionDB();
+    static double precioTotal = 0;
+    static int iFactura = 1;
+    static String filePath = String.format("%s%d%s", "facturas/factura", iFactura, ".pdf");
+    static File file = new File(filePath);
+    static int idFactura = -1;
+    private DefaultTableModel modelo = new DefaultTableModel();
+    static ConexionDB conexionDB = new ConexionDB();
 
     public Pag5i1_Factura() {
+        GENERARFACTURAButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    while (!file.createNewFile()){
+                        iFactura++;
+                        filePath = String.format("%s%d%s", "facturas/factura", iFactura, ".pdf");
+                        file = new File(filePath);
+                    }
+
+                    Document document = new Document();
+                    PdfWriter.getInstance(document, new FileOutputStream(filePath));
+                    document.open();
+                    Font tituloFont = new Font(Font.FontFamily.COURIER, 26, Font.BOLD);
+
+                    // Logo CicloShop
+                    Image imagen = Image.getInstance("src/imagenes/logo(Pequenio).jpg");
+                    imagen.setAlignment(Element.ALIGN_CENTER);
+                    imagen.setBorderColor(BaseColor.BLACK);
+                    document.add(imagen);
+
+                    // Datos CicloShop
+                    Paragraph datosCicloShop = new Paragraph();
+                    datosCicloShop.add(new Paragraph("Telefono: 0969037943"));
+                    datosCicloShop.add(new Paragraph("Email: cicloShop@mail.com"));
+                    document.add(datosCicloShop);
+                    document.add(Chunk.NEWLINE);
+
+                    insertarLinea(document); // Linea Separadora
+                    document.add(Chunk.NEWLINE);
+
+                    //Datos Personales
+                    datosPersonalesTabla(document, idFactura);
+                    document.add(Chunk.NEWLINE);
+
+                    insertarLinea(document);
+                    document.add(Chunk.NEWLINE);
+
+                    //Datos de Productos
+                    tablaProductos(document, idFactura);
+                    document.add(Chunk.NEWLINE);
+                    document.add(Chunk.NEWLINE);
+
+                    //Total Factura
+                    tablaTotal(document);
+
+                    document.close();
+                    precioTotal=0;
+                    Desktop.getDesktop().open(new java.io.File(filePath));
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(null, ex.getMessage());
+                }
+            }
+        });
+    }
+    private static void datosPersonalesTabla(Document document, int idFactura) throws DocumentException {
         try {
             Connection connection = conexionDB.ConexionLocal();
-            int ultimaFactura = 0;
+            PreparedStatement ps = connection.prepareStatement("SELECT nombre, fecha_v, telefono, correo \n" +
+                    "FROM VENTAS \n" +
+                    "JOIN CLIENTES ON VENTAS.id_cliente = CLIENTES.id_cliente\n" +
+                    "WHERE id_v=?");
+            ps.setInt(1,idFactura);
+            ResultSet rs = ps.executeQuery();
+            rs.next();
+            PdfPTable table = new PdfPTable(4);
+            table.setWidthPercentage(100);
+            table.setHorizontalAlignment(Element.ALIGN_LEFT);
 
-            DefaultTableModel modelo = new DefaultTableModel();
-            table1.setModel(modelo);
-            PreparedStatement factura = connection.prepareStatement("SELECT MAX(factura_id) AS idFactura FROM Facturas");
-            ResultSet rsFactura = factura.executeQuery();
-            if (rsFactura.next()){
-                ultimaFactura = rsFactura.getInt(1);
+            PdfPCell[] cells = {
+                    new PdfPCell(new Phrase("Factura a:")),
+                    new PdfPCell(new Phrase(rs.getString(1))),
+                    new PdfPCell(new Phrase("")),
+                    new PdfPCell(new Phrase("")),
+                    new PdfPCell(new Phrase("Factura N°:")),
+                    new PdfPCell(new Phrase(String.valueOf(idFactura))),
+                    new PdfPCell(new Phrase("")),
+                    new PdfPCell(new Phrase("")),
+                    new PdfPCell(new Phrase("Fecha Factura:")),
+                    new PdfPCell(new Phrase(rs.getString(2))),
+                    new PdfPCell(new Phrase("")),
+                    new PdfPCell(new Phrase("")),
+                    new PdfPCell(new Phrase("Teléfono:")),
+                    new PdfPCell(new Phrase(rs.getString(3))),
+                    new PdfPCell(new Phrase("")),
+                    new PdfPCell(new Phrase("")),
+                    new PdfPCell(new Phrase(rs.getString(4))),
+                    new PdfPCell(new Phrase("")),
+                    new PdfPCell(new Phrase("")),
+                    new PdfPCell(new Phrase(""))
+            };
+            //Quitar los bordes de cada celda en la tabla
+            for (PdfPCell cell : cells) {
+                cell.setBorderWidth(0);
+                table.addCell(cell);
             }
 
-            PreparedStatement preparedStatement = connection.prepareStatement("SELECT F.factura_id, F.fecha, C.nombre_cln AS Nombre_Cliente, \n" +
-                    "       P.nombre_prd AS Nombre_Producto, D.cantidad_producto, P.precio_venta,\n" +
-                    "       (D.cantidad_producto* P.precio_venta) AS Subtotal\n" +
-                    "FROM Facturas F\n" +
-                    "JOIN Detalle D ON F.factura_id = D.factura_id\n" +
-                    "JOIN Productos P ON D.producto_id= P.producto_id\n" +
-                    "JOIN Clientes C ON F.cliente_id = C.cliente_id\n" +
-                    "WHERE F.factura_id= ?");
-            preparedStatement.setInt(1,ultimaFactura);
+            document.add(table);
+
+        }catch (SQLException ex){
+            JOptionPane.showMessageDialog(null,ex.getMessage(),"ERROR SQL", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private static void tablaProductos(Document document, int idFactura) throws DocumentException {
+        float [] columnWidth = {245f, 85f, 85f ,85f};
+        PdfPTable table = new PdfPTable(columnWidth);
+        table.setWidthPercentage(100);
+        table.setHorizontalAlignment(Element.ALIGN_LEFT);
+
+        PdfPCell[] headerCell = {
+                new PdfPCell(new Phrase("Producto:")),
+                new PdfPCell(new Phrase("Cantidad")),
+                new PdfPCell(new Phrase("Precio")),
+                new PdfPCell(new Phrase("Subtotal")),
+        };
+        for (PdfPCell cell : headerCell) {
+            cell.setBorderWidth(0);
+            table.addCell(cell);
+        }
+        try {
+            Connection connection = conexionDB.ConexionLocal();
+            PreparedStatement ps = connection.prepareStatement("\n" +
+                    "SELECT nombre, cantidad_p, precio, cantidad_p*precio as subtotal\n" +
+                    "FROM productosDetallados\n" +
+                    "WHERE id_v=?");
+            ps.setInt(1, idFactura);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()){
+                precioTotal = precioTotal + rs.getDouble(4);
+                PdfPCell[] cells = {
+                        new PdfPCell(new Phrase(rs.getString(1))),
+                        new PdfPCell(new Phrase(String.valueOf(rs.getInt(2)))),
+                        new PdfPCell(new Phrase(String.format("%.2f",rs.getDouble(3)))),
+                        new PdfPCell(new Phrase(String.format("%.2f",rs.getDouble(4)))),
+                };
+                for (PdfPCell cell : cells) {
+                    cell.setBorderWidth(0);
+                    table.addCell(cell);
+                }
+            }
+            document.add(table);
+        }catch (SQLException ex){
+            JOptionPane.showMessageDialog(null,ex.getMessage(),"ERROR SQL", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private static void tablaTotal(Document document) throws DocumentException {
+        double iva = precioTotal*0.15;
+        double totalIva=precioTotal+iva;
+        PdfPTable table = new PdfPTable(4);
+        table.setWidthPercentage(100);
+        table.setHorizontalAlignment(Element.ALIGN_LEFT);
+
+        PdfPCell[] cells = {
+                new PdfPCell(new Phrase("")),
+                new PdfPCell(new Phrase("")),
+                new PdfPCell(new Phrase("Subtotal sin IVA")),
+                new PdfPCell(new Phrase(String.valueOf(precioTotal))),
+                new PdfPCell(new Phrase("")),
+                new PdfPCell(new Phrase("")),
+                new PdfPCell(new Phrase("IVA 15%")),
+                new PdfPCell(new Phrase(String.format("%.2f",iva))),
+                new PdfPCell(new Phrase("")),
+                new PdfPCell(new Phrase("")),
+                new PdfPCell(new Phrase("TOTAL")),
+                new PdfPCell(new Phrase(String.format("%.2f",totalIva)))
+        };
+
+        for (PdfPCell cell : cells) {
+            cell.setBorderWidth(0);
+            table.addCell(cell);
+        }
+        document.add(table);
+    }
+
+    public void insertarLinea (Document document) throws DocumentException {
+        DottedLineSeparator dottedline = new DottedLineSeparator();
+        dottedline.setOffset(-2);
+        dottedline.setGap(2f);
+        document.add(dottedline);
+    }
+    public void obtenerFactura ( int idInFactura){
+        try {
+            idFactura = idInFactura;
+            modelo = new DefaultTableModel();
+            table1.setModel(modelo);
+            table1.setDefaultEditor(Object.class, null);
+            table1.getTableHeader().setReorderingAllowed(false);
+
+            Connection connection = conexionDB.ConexionLocal();
+            PreparedStatement preparedStatement = connection.prepareStatement("SELECT PRODUCTOS.nombre AS nombre_producto, PRODUCTOS.precio, cantidad_p, PRODUCTOS.precio * cantidad_p AS SUBTOTAL\n" +
+                    "FROM DETALLES\n" +
+                    "JOIN PRODUCTOS ON DETALLES.id_p = PRODUCTOS.id_p\n" +
+                    "WHERE id_v=?\n" +
+                    "order by nombre_producto;");
+            preparedStatement.setInt(1, idFactura);
             ResultSet rs = preparedStatement.executeQuery();
             ResultSetMetaData resultSetMetaData = rs.getMetaData();
 
             int cantidadColumnas = resultSetMetaData.getColumnCount();
 
-            modelo.addColumn("Factura ID");
-            modelo.addColumn("Fecha");
-            modelo.addColumn("Cliente");
-            modelo.addColumn("Producto");
-            modelo.addColumn("Cantidad");
+            modelo.addColumn("Nombre del Producto");
             modelo.addColumn("Precio Unitario");
+            modelo.addColumn("Cantidad");
             modelo.addColumn("Subtotal");
-            while (rs.next()){
+            while (rs.next()) {
                 Object[] filas = new Object[cantidadColumnas];
-                for (int i=0;i<cantidadColumnas;i++){
+                for (int i = 0; i < cantidadColumnas; i++) {
                     filas[i] = rs.getObject(i + 1);
                 }
                 modelo.addRow(filas);
             }
         } catch (SQLException ex) {
-            throw new RuntimeException(ex);
+            JOptionPane.showMessageDialog(null, "Error: " + ex.getMessage(), "SQL ERROR", JOptionPane.ERROR_MESSAGE);
+        } catch (NullPointerException ignored) {
         }
-        regresarButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                frameFacturaCompra.setVisible(false);
-                Pag5_Compra.frameCompra.setVisible(true);
-            }
-        });
     }
 }
+

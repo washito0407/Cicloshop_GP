@@ -1,11 +1,14 @@
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
+import java.io.InputStream;
 import java.sql.*;
-import java.util.HashSet;
 
 public class Pag5_Compra {
     private JTable table1;
@@ -15,27 +18,28 @@ public class Pag5_Compra {
     private JLabel imagenLabel;
     private JTable table2;
     private JButton ELIMINARButton;
-    private JSpinner cantidadSpinner;
-    private JButton FACTURARButton;
+    private JButton REALIZARCOMPRAButton;
+    private JButton MODIFICARCANTIDADButton;
+    private JButton REFRESCARPRODUCTOSButton;
     static JFrame frameCompra = new JFrame("Compra");
     ConexionDB conexionDB = new ConexionDB();
+    private DefaultTableModel modelo = new DefaultTableModel();
+    static DefaultTableModel modeloCarrito = new DefaultTableModel();
 
     public Pag5_Compra() {
         table1.setDefaultEditor(Object.class, null);
         table2.setDefaultEditor(Object.class, null);
-        //Inicializamos el spinner
-        SpinnerModel spinnerModel = new SpinnerNumberModel(1,1,20,1);
-        cantidadSpinner.setModel(spinnerModel);
 
-        DefaultTableModel modeloCarrito = new DefaultTableModel();
+        modeloCarrito = new DefaultTableModel();
         modeloCarrito.addColumn("Producto ID");
         modeloCarrito.addColumn("Nombre");
         modeloCarrito.addColumn("Precio");
         modeloCarrito.addColumn("Cantidad");
         modeloCarrito.addColumn("Total");
-        table2.setModel(modeloCarrito);
+        table2.setModel(modeloCarrito); // Tabla Carrito
 
-        actualizarTablaSQL();
+        actualizarTablaSQL(); //Tabla de Productos Disponibles
+
         table1.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
@@ -55,87 +59,54 @@ public class Pag5_Compra {
                 Pag1_Inicio.frame.setVisible(true);
             }
         });
-        FACTURARButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (table2.getModel().getRowCount()>0){
-                    frameCompra.dispose();
-                    Pag5i_Cliente.frameCliente.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                    Pag5i_Cliente.frameCliente.setContentPane(new Pag5i_Cliente().clientePanel);
-                    Pag5i_Cliente.frameCliente.setSize(500,700);
-                    Pag5i_Cliente.frameCliente.setVisible(true);
-                    Pag5i_Cliente.frameCliente.setLocationRelativeTo(null);
 
-                    Connection connection = conexionDB.ConexionLocal();
-                    int ultimaFactura=0;
-                    try {
-                        int idTemp = 1727578721;
-                        PreparedStatement psTemp = connection.prepareStatement("INSERT INTO Facturas(cliente_id) VALUES (?)");
-                        psTemp.setInt(1,idTemp);
-                        psTemp.executeUpdate();
-                        PreparedStatement factura = connection.prepareStatement("SELECT MAX(factura_id) AS idFactura FROM Facturas");
-                        ResultSet rsFactura = factura.executeQuery();
-                        if (rsFactura.next()){
-                            ultimaFactura = rsFactura.getInt(1);
-                        }
-                        PreparedStatement ps = connection.prepareStatement("INSERT INTO Detalle(cantidad_producto, producto_id, factura_id) VALUES (?,?,?)");
-                        PreparedStatement actualizarStock = connection.prepareStatement("UPDATE Productos SET stock = stock - ? WHERE producto_id=?");
-                        for (int i = 0; i <table2.getRowCount(); i++) {
-                            ps.setInt(1,Integer.parseInt(table2.getValueAt(i,3).toString()));
-                            ps.setInt(2,Integer.parseInt(table2.getValueAt(i,0).toString()));
-                            ps.setInt(3,ultimaFactura);
-                            ps.executeUpdate();
-
-                            actualizarStock.setInt(1,Integer.parseInt(table2.getValueAt(i,3).toString()));
-                            actualizarStock.setInt(2,Integer.parseInt(table2.getValueAt(i,0).toString()));
-                            actualizarStock.executeUpdate();
-                        }
-                        actualizarTablaSQL();
-                    }catch (SQLException ex){
-                        JOptionPane.showMessageDialog(null,ex.getMessage());
-                    }
-                }else {
-                    JOptionPane.showMessageDialog(null,"Ingrese al menos un producto al carrito","ERROR",JOptionPane.ERROR_MESSAGE);
-                }
-            }
-        });
         SELECCIONARButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                int cantidadProducto = (Integer) cantidadSpinner.getValue();
-                int idProducto= Integer.parseInt(table1.getModel().getValueAt(table1.getSelectedRow(),0).toString());
-                String nombreProducto = table1.getModel().getValueAt(table1.getSelectedRow(),1).toString();
-                double precioProducto = Double.parseDouble(table1.getModel().getValueAt(table1.getSelectedRow(),3).toString());
-                double totalProducto = cantidadProducto*precioProducto;
-                boolean productoExiste = false;
+                int filaSeleccionada = table1.getSelectedRow();
+                boolean productoEnCarrito=false;
+                if (filaSeleccionada != -1) {
+                    int idProducto = Integer.parseInt(table1.getValueAt(filaSeleccionada, 0).toString());
+                    for (int i=0; i<modeloCarrito.getRowCount();i++){
+                        if (Integer.parseInt(modeloCarrito.getValueAt(i,0).toString())==idProducto){
+                            productoEnCarrito=true;
+                            break;
+                        };
+                    }
+                    if (!productoEnCarrito){
+                        String valor = JOptionPane.showInputDialog(null, "Cantidad: ", "Cuantos productos?", JOptionPane.PLAIN_MESSAGE);
+                        if (valor != null) {
+                            try {
+                                int cantidad = Integer.parseInt(valor);
+                                int cantidadProducto = Integer.parseInt(table1.getValueAt(filaSeleccionada, 3).toString());
+                                if (cantidad > cantidadProducto) {
+                                    JOptionPane.showMessageDialog(null, "Seleccione una cantidad que no supere el stock!", "Cantidad excede la del producto", JOptionPane.ERROR_MESSAGE);
+                                } else if (cantidad<1){
+                                    JOptionPane.showMessageDialog(null,"Ingrese una cantidad correcta","ERROR",JOptionPane.ERROR_MESSAGE);
+                                }else {
+                                    double precioP = Double.parseDouble(table1.getValueAt(filaSeleccionada, 2).toString());
+                                    double total = precioP * cantidad;
 
-                Connection connection = conexionDB.ConexionLocal();
-                try {
-                    PreparedStatement ps = connection.prepareStatement("SELECT stock FROM Productos WHERE producto_id = ?");
-                    ps.setInt(1,idProducto);
-                    ResultSet rs = ps.executeQuery();
-                    while (rs.next()){
-                        if (rs.getInt("stock")<cantidadProducto){
-                            JOptionPane.showMessageDialog(null,"La cantidad no puede ser mayor a la del stock");
-                        }else {
-                            for (int i=0;i<table2.getRowCount();i++){
-                                if (idProducto==Integer.parseInt(table2.getValueAt(i,0).toString())){
-                                    productoExiste=true;
-                                    break;
+                                    String nombreP = table1.getValueAt(filaSeleccionada, 1).toString();
+
+                                    Object[] filas = new Object[modeloCarrito.getColumnCount()];
+                                    filas[0] = idProducto;
+                                    filas[1] = nombreP;
+                                    filas[2] = precioP;
+                                    filas[3] = cantidad;
+                                    filas[4] = total;
+
+                                    modeloCarrito.addRow(filas);
                                 }
-                            }
-                            if (!productoExiste){
-                                actualizarTabla(modeloCarrito, idProducto,nombreProducto,precioProducto,cantidadProducto,totalProducto);
-                            }else {
-                                JOptionPane.showMessageDialog(null,"Ya se encuentra agregado el producto al carrito");
-                                productoExiste=false;
+                            } catch (NumberFormatException ex) {
+                                JOptionPane.showMessageDialog(null, "Ingrese un cantidad correcta", "ERROR", JOptionPane.ERROR_MESSAGE);
                             }
                         }
+                    }else {
+                        JOptionPane.showMessageDialog(null,"El producto ya está agregado", "Producto en carrito",JOptionPane.ERROR_MESSAGE);
                     }
-                }catch (SQLException ex){
-                    JOptionPane.showMessageDialog(null,ex.getMessage());
-                }catch (ArrayIndexOutOfBoundsException exception){
-                    JOptionPane.showMessageDialog(null,"Seleccione el producto que desee agregar");
+                } else {
+                    JOptionPane.showMessageDialog(null, "Seleccione un producto", "Fila no seleccionada", JOptionPane.INFORMATION_MESSAGE);
                 }
             }
         });
@@ -151,60 +122,119 @@ public class Pag5_Compra {
 
             }
         });
-    }
+        MODIFICARCANTIDADButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int filaSeleccionada = table2.getSelectedRow();
+                if (filaSeleccionada!=-1){
+                    String valor = JOptionPane.showInputDialog(null, "Cantidad: ", "Modificar cantidad", JOptionPane.PLAIN_MESSAGE);
+                    if (valor != null) {
+                        try {
+                            int cantidad = Integer.parseInt(valor);
+                            if (cantidad<1){
+                                JOptionPane.showMessageDialog(null,"Ingrese una cantidad correcta","",JOptionPane.ERROR_MESSAGE);
+                            }else {
+                                int idProducto = Integer.parseInt(modeloCarrito.getValueAt(filaSeleccionada, 0).toString());
+                                int stockDisponible=-1;
+                                for (int i=0; i<modelo.getRowCount();i++){
+                                    if (Integer.parseInt(modelo.getValueAt(i,0).toString())==idProducto){
+                                        stockDisponible = Integer.parseInt(modelo.getValueAt(i,3).toString());
+                                        break;
+                                    };
+                                }
+                                if (stockDisponible!=-1){
+                                    if (cantidad > stockDisponible) {
+                                        JOptionPane.showMessageDialog(null, "Seleccione una cantidad que no supere el stock!", "Cantidad excede la del producto", JOptionPane.ERROR_MESSAGE);
+                                    } else {
+                                        modeloCarrito.setValueAt(cantidad, filaSeleccionada, 3);
+                                        double totalNuevo = Double.parseDouble(modeloCarrito.getValueAt(filaSeleccionada,2).toString()) * cantidad;
+                                        modeloCarrito.setValueAt(totalNuevo, filaSeleccionada, 4);
 
-    public void actualizarTabla(DefaultTableModel modelo, int id,String nombre,double precio, int cantidad, double total){
-        try {
-            Object[] filas = {id, nombre, precio, cantidad, total};
-            modelo.addRow(filas);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(null,ex.getMessage());
-        }
+                                    }
+                                }
+                            }
+                        } catch (NumberFormatException ex) {
+                            JOptionPane.showMessageDialog(null, "Ingrese un cantidad correcta", "ERROR", JOptionPane.ERROR_MESSAGE);
+                        }
+                    }
+                }else {
+                    JOptionPane.showMessageDialog(null, "Seleccione un producto", "Fila no seleccionada", JOptionPane.INFORMATION_MESSAGE);
+                }
+            }
+        });
+        REALIZARCOMPRAButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (table2.getRowCount()>0){
+                    frameCompra.setVisible(false);
+                    Pag5i_Cliente.frameCliente.setContentPane(new Pag5i_Cliente().clientePanel);
+                    Pag5i_Cliente.frameCliente.setSize(600,350);
+                    Pag5i_Cliente.frameCliente.setVisible(true);
+                    Pag5i_Cliente.frameCliente.setLocationRelativeTo(null);
+                    Pag5i_Cliente.frameCliente.setVisible(true);
+                }else {
+                    JOptionPane.showMessageDialog(null,"Ingrese al menos un producto");
+                }
+            }
+        });
+        REFRESCARPRODUCTOSButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                actualizarTablaSQL();
+            }
+        });
     }
-    public void actualizarTablaSQL(){
+    public void actualizarTablaSQL() {
         try {
-            Connection connection = conexionDB.ConexionLocal();
-
-            DefaultTableModel modelo = new DefaultTableModel();
+            modelo = new DefaultTableModel();
             table1.setModel(modelo);
-            PreparedStatement preparedStatement = connection.prepareStatement("SELECT producto_id, nombre_prd, descripcion, precio_venta, stock FROM Productos");
+            table1.setDefaultEditor(Object.class, null);
+            table1.getTableHeader().setReorderingAllowed(false) ;
+
+            Connection connection = conexionDB.ConexionLocal();
+            PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM PRODUCTOS WHERE estado_p='DISPONIBLE'");
             ResultSet rs = preparedStatement.executeQuery();
             ResultSetMetaData resultSetMetaData = rs.getMetaData();
 
             int cantidadColumnas = resultSetMetaData.getColumnCount();
 
-            modelo.addColumn("Producto ID");
+            modelo.addColumn("ID");
             modelo.addColumn("Nombre");
-            modelo.addColumn("Descripcion");
             modelo.addColumn("Precio");
             modelo.addColumn("Stock");
-            while (rs.next()){
+            while (rs.next()) {
                 Object[] filas = new Object[cantidadColumnas];
-                for (int i=0;i<cantidadColumnas;i++){
+                for (int i = 0; i < cantidadColumnas; i++) {
                     filas[i] = rs.getObject(i + 1);
                 }
                 modelo.addRow(filas);
             }
         } catch (SQLException ex) {
-            throw new RuntimeException(ex);
+            JOptionPane.showMessageDialog(null, "Error: "+ex.getMessage(),"ERROR SQL",JOptionPane.ERROR_MESSAGE);
+        } catch (NullPointerException ignored) {
         }
     }
-    public void obtenerImagen(int filaSeleccionada){
-        Connection connection = conexionDB.ConexionLocal();
-        try{
-            int idFilaSeleccionada= Integer.parseInt(table1.getModel().getValueAt(filaSeleccionada,0).toString());
-            PreparedStatement ps = connection.prepareStatement("SELECT imagen_prd FROM Productos WHERE producto_id = ?");
-            ps.setInt(1, idFilaSeleccionada);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()){
-                byte[] bytes = rs.getBytes("imagen_prd");
-                ImageIcon imageIcon = new ImageIcon(bytes);
-                imagenLabel.setIcon(imageIcon);
+    public void obtenerImagen(int filaSeleccionada) {
+        try {
+            Connection connection = conexionDB.ConexionLocal();
+            String idFilaSeleccionada=table1.getValueAt(filaSeleccionada,0).toString();
+            PreparedStatement selectImagen = connection.prepareStatement("SELECT imagen FROM PRODUCTOS WHERE id_p=?");
+            selectImagen.setInt(1,Integer.parseInt(idFilaSeleccionada));
+            ResultSet result = selectImagen.executeQuery();
+            if (result.next()){
+                try {
+                    Blob imagen = result.getBlob("imagen");
+                    InputStream in = imagen.getBinaryStream();
+                    BufferedImage image = ImageIO.read(in);
+                    Icon icon = new ImageIcon(image.getScaledInstance(imagenLabel.getWidth(), imagenLabel.getHeight(), Image.SCALE_DEFAULT));
+                    imagenLabel.setIcon(icon);
+                }catch (Exception  ex){
+                    imagenLabel.setIcon(null);
+                }
             }
-        }catch (SQLException ex) {
-            JOptionPane.showMessageDialog(null, ex.getMessage());
-        }catch (NullPointerException exception){
-            imagenLabel.setIcon(null);
+        }catch (SQLException ex){
+            System.out.println(ex.getMessage());
         }
+
     }
 }
